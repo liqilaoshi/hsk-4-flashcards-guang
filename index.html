@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HSK 4 级全量词汇闪卡</title>
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --accent-red: #ef4444;
+            --accent-green: #22c55e;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            margin: 0 0 8px 0;
+            color: var(--primary-color);
+            font-size: 1.8rem;
+        }
+
+        header p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 550px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: #e2e8f0;
+            border-radius: 9999px;
+            height: 10px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        .progress-fill {
+            background-color: var(--primary-color);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .flashcard-container {
+            perspective: 1000px;
+            width: 100%;
+            min-height: 380px;
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+
+        .flashcard {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: 380px;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            border-radius: 16px;
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            padding: 24px;
+            box-sizing: border-box;
+        }
+
+        .card-front {
+            font-size: 4rem;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        .card-front .hint {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-top: 20px;
+            font-weight: normal;
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+            justify-content: space-between;
+        }
+
+        .word-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .pinyin {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .meaning {
+            font-size: 1.2rem;
+            color: var(--text-main);
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        .audio-btn {
+            background: #f1f5f9;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .audio-btn:hover {
+            background-color: #e2e8f0;
+        }
+
+        .example-box {
+            width: 100%;
+            background-color: #f8fafc;
+            border-radius: 12px;
+            padding: 14px;
+            box-sizing: border-box;
+            border-left: 4px solid var(--primary-color);
+            text-align: left;
+            margin-top: 15px;
+        }
+
+        .example-title {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: bold;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .example-hanzi {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #334155;
+            line-height: 1.4;
+        }
+
+        .example-pinyin {
+            font-size: 0.95rem;
+            color: var(--primary-color);
+            margin: 4px 0;
+        }
+
+        .example-trans {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .controls {
+            display: flex;
+            gap: 16px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-dont-know {
+            background-color: #fee2e2;
+            color: var(--accent-red);
+        }
+        .btn-dont-know:hover { background-color: #fecaca; }
+
+        .btn-know {
+            background-color: #dcfce7;
+            color: var(--accent-green);
+        }
+        .btn-know:hover { background-color: #bbf7d0; }
+
+        .nav-controls {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 24px;
+        }
+
+        .btn-nav {
+            background-color: #e2e8f0;
+            color: var(--text-main);
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .btn-nav:hover { background-color: #cbd5e1; }
+
+        .wrong-section {
+            width: 100%;
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .wrong-section h3 {
+            margin-top: 0;
+            color: var(--accent-red);
+            font-size: 1.1rem;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .wrong-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 220px;
+            overflow-y: auto;
+        }
+
+        .wrong-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            border-bottom: 1px solid #f8fafc;
+            font-size: 0.92rem;
+        }
+
+        .wrong-item:hover { background-color: #f8fafc; }
+        .wrong-item span { cursor: pointer; }
+
+        .remove-wrong {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .remove-wrong:hover { color: var(--accent-red); }
+
+        .empty-tip {
+            color: var(--text-muted);
+            text-align: center;
+            font-size: 0.9rem;
+            padding: 15px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>HSK 4 级全量词汇闪卡</h1>
+        <p>包含 469 词及精准例句、拼音与标准语音</p>
+    </header>
+
+    <div class="container">
+        <div class="stats">
+            <span id="counter">词语 1 / 469</span>
+            <span>自测模式</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress"></div>
+        </div>
+
+        <div class="flashcard-container" onclick="flipCard()">
+            <div class="flashcard" id="card">
+                <div class="card-face card-front">
+                    <span id="card-hanzi">阴</span>
+                    <div class="hint">点击卡片查看释义与例句 🔄</div>
+                </div>
+                <div class="card-face card-back">
+                    <div class="word-header">
+                        <div class="pinyin">
+                            <span id="card-pinyin">yīn</span>
+                            <button class="audio-btn" onclick="event.stopPropagation(); playAudio('word')" title="播放发音">🔊 读词</button>
+                        </div>
+                        <div class="meaning" id="card-meaning">mendung</div>
+                    </div>
+
+                    <div class="example-box">
+                        <div class="example-title">
+                            <span>📝 例句</span>
+                            <button class="audio-btn" onclick="event.stopPropagation(); playAudio('example')" title="播放例句发音">🔊 读例句</button>
+                        </div>
+                        <div class="example-hanzi" id="card-example">今天天气是阴天。</div>
+                        <div class="example-pinyin" id="card-example-pinyin">Jīntiān tiānqì shì yīntiān.</div>
+                        <div class="example-trans" id="card-example-trans">Today's weather is cloudy.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-dont-know" onclick="markWrong()">❌ 不会</button>
+            <button class="btn btn-know" onclick="markCorrect()">✔️ 认识</button>
+        </div>
+
+        <div class="nav-controls">
+            <button class="btn-nav" onclick="prevCard()">⬅️ 上一个</button>
+            <button class="btn-nav" onclick="nextCard()">下一个 ➡️</button>
+        </div>
+
+        <div class="wrong-section">
+            <h3>
+                <span>📌 我的错词本 (“不会”的词)</span>
+                <span id="wrong-count" style="font-size: 0.85rem; color: var(--text-muted);">0 个词</span>
+            </h3>
+            <ul class="wrong-list" id="wrongList">
+                <div class="empty-tip">暂无错词，继续加油！💪</div>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const vocabData = [
+            { hanzi: "阴", pinyin: "yīn", meaning: "mendung", example: "今天天气是阴天。", examplePinyin: "Jīntiān tiānqì shì yīntiān.", exampleTranslation: "Today's weather is cloudy." },
+            { hanzi: "运动", pinyin: "yùndòng", meaning: "olahraga", example: "我每天早上都去运动。", examplePinyin: "Wǒ měitiān zǎoshang dōu qù yùndòng.", exampleTranslation: "I go to exercise every morning." },
+            { hanzi: "丈夫", pinyin: "zhàngfu", meaning: "suami", example: "她的丈夫是一名医生。", examplePinyin: "Tā de zhàngfu shì yī míng yīshēng.", exampleTranslation: "Her husband is a doctor." },
+            { hanzi: "着", pinyin: "zhe", meaning: "sedang", example: "门开着呢。", examplePinyin: "Mén kāi zhe ne.", exampleTranslation: "The door is open." },
+            { hanzi: "矮", pinyin: "ǎi", meaning: "pendek", example: "弟弟比哥哥矮一点。", examplePinyin: "Dìdi bǐ gēge ǎi yīdiǎn.", exampleTranslation: "The younger brother is a bit shorter than the elder brother." },
+            { hanzi: "搬", pinyin: "bān", meaning: "pindah", example: "我们下周要搬家。", examplePinyin: "Wǒmen xiàzhōu yào bānjiā.", exampleTranslation: "We are moving next week." },
+            { hanzi: "办公室", pinyin: "bàngōngshì", meaning: "kantor", example: "他在办公室开会。", examplePinyin: "Tā zài bàngōngshì kāihuì.", exampleTranslation: "He is in a meeting in the office." },
+            { hanzi: "半", pinyin: "bàn", meaning: "separuh", example: "我已经学了半个小时。", examplePinyin: "Wǒ yǐjīng xué le bàn gè xiǎoshí.", exampleTranslation: "I have been studying for half an hour." },
+            { hanzi: "帮忙", pinyin: "bāngmáng", meaning: "membantu", example: "谢谢你帮忙。", examplePinyin: "Xièxie nǐ bāngmáng.", exampleTranslation: "Thank you for your help." },
+            { hanzi: "包", pinyin: "bāo", meaning: "tas", example: "这个包很漂亮。", examplePinyin: "Zhè gè bāo hěn piàoliang.", exampleTranslation: "This bag is very beautiful." },
+            { hanzi: "抱", pinyin: "bào", meaning: "hug", example: "妈妈抱了抱孩子。", examplePinyin: "Māma bào le bào hái zi.", exampleTranslation: "The mother hugged the child." },
+            { hanzi: "饱", pinyin: "bǎo", meaning: "kenyang", example: "我已经吃饱了。", examplePinyin: "Wǒ yǐjīng chī bǎo le.", exampleTranslation: "I am already full." },
+            { hanzi: "鼻子", pinyin: "bízi", meaning: "hidung", example: "大象的鼻子很长。", examplePinyin: "Dàxiàng de bízi hěn cháng.", exampleTranslation: "An elephant's nose is very long." },
+            { hanzi: "笔记本", pinyin: "bǐjìběn", meaning: "notebooks", example: "请打开你的笔记本。", examplePinyin: "Qǐng dǎkāi nǐ de bǐjìběn.", exampleTranslation: "Please open your notebook." },
+            { hanzi: "变化", pinyin: "biànhuà", meaning: "variasi/perubahan", example: "这里的变化很大。", examplePinyin: "Zhèlǐ de biànhuà hěn dà.", exampleTranslation: "Great changes have taken place here." },
+            { hanzi: "宾馆", pinyin: "bīnguǎn", meaning: "hotel", example: "我们住在一家大宾馆。", examplePinyin: "Wǒmen zhù zài yī jiā dà bīnguǎn.", exampleTranslation: "We stay in a large hotel." },
+            { hanzi: "冰箱", pinyin: "bīngxiāng", meaning: "kulkas", example: "牛奶在冰箱里。", examplePinyin: "Niúnǎi zài bīngxiāng lǐ.", exampleTranslation: "The milk is in the refrigerator." },
+            { hanzi: "层", pinyin: "céng", meaning: "lantai", example: "我住在三层。", examplePinyin: "Wǒ zhù zài sān céng.", exampleTranslation: "I live on the third floor." },
+            { hanzi: "差", pinyin: "chà", meaning: "jelek", example: "我的汉语水平还很差。", examplePinyin: "Wǒ de Hànyǔ shuǐpíng hái hěn chà.", exampleTranslation: "My Chinese is still quite poor." },
+            { hanzi: "衬衫", pinyin: "chènshān", meaning: "kemeja", example: "他穿着一件白衬衫。", examplePinyin: "Tā chuān zhe yī jiàn bái chènshān.", exampleTranslation: "He is wearing a white shirt." },
+            { hanzi: "船", pinyin: "chuán", meaning: "kapal", example: "我们坐船去旅游。", examplePinyin: "Wǒmen zuò chuán qù lǚyóu.", exampleTranslation: "We go traveling by boat." },
+            { hanzi: "聪明", pinyin: "cōngmíng", meaning: "pintar", example: "这个孩子很聪明。", examplePinyin: "Zhè gè háizi hěn cōngmíng.", exampleTranslation: "This child is very smart." },
+            { hanzi: "打扫", pinyin: "dǎsǎo", meaning: "menyapa/membersihkan", example: "请打扫一下房间。", examplePinyin: "Qǐng dǎsǎo yīxià fángjiān.", exampleTranslation: "Please clean up the room." },
+            { hanzi: "打算", pinyin: "dǎsuàn", meaning: "rencana", example: "你周末有什么打算？", examplePinyin: "Nǐ zhōumò yǒu shénme dǎsuàn?", exampleTranslation: "What are your plans for the weekend?" },
+            { hanzi: "打折", pinyin: "dǎzhé", meaning: "diskon", example: "这家店今天打折。", examplePinyin: "Zhè jiā diàn jīntiān dǎzhé.", exampleTranslation: "This shop has discounts today." },
+            { hanzi: "担心", pinyin: "dānxīn", meaning: "khawatir", example: "不用担心，一切顺利。", examplePinyin: "Bùyòng dānxīn, yīqiè shùnlì.", exampleTranslation: "Don't worry, everything goes well." },
+            { hanzi: "小心", pinyin: "xiǎoxīn", meaning: "hati-hati", example: "路滑，请小心。", examplePinyin: "Lù huá, qǐng xiǎoxīn.", exampleTranslation: "The road is slippery, please be careful." },
+            { hanzi: "放心", pinyin: "fàngxīn", meaning: "tenang", example: "你可以放心。", examplePinyin: "Nǐ kěyǐ fàngxīn.", exampleTranslation: "You can rest assured." },
+            { hanzi: "开心", pinyin: "kāixīn", meaning: "senang", example: "今天过得很开心。", examplePinyin: "Jīntiān guò de hěn kāixīn.", exampleTranslation: "I had a very happy time today." },
+            { hanzi: "伤心", pinyin: "shāngxīn", meaning: "sedih", example: "听到消息她很伤心。", examplePinyin: "Tīngdào xiāoxi tā hěn shāngxīn.", exampleTranslation: "She was very sad to hear the news." },
+            { hanzi: "耐心", pinyin: "nàixīn", meaning: "sabar", example: "老师很耐心地解答问题。", examplePinyin: "Lǎoshī hěn nàixīn de jiědá wèntí.", exampleTranslation: "The teacher answered questions patiently." },
+            { hanzi: "信心", pinyin: "xìnxīn", meaning: "percaya diri", example: "我对考试很有信心。", examplePinyin: "Wǒ duì kǎoshì hěn yǒu xìnxīn.", exampleTranslation: "I am confident about the exam." },
+            { hanzi: "中心", pinyin: "zhōngxīn", meaning: "pusat", example: "我们在市中心见面。", examplePinyin: "Wǒmen zài shì zhōngxīn jiànmiàn.", exampleTranslation: "We met in the city center." },
+            { hanzi: "粗心", pinyin: "cūxīn", meaning: "ceroboh", example: "别太粗心了。", examplePinyin: "Bié tài cūxīn le.", exampleTranslation: "Don't be too careless." },
+            { hanzi: "马虎", pinyin: "mǎhu", meaning: "ceroboh", example: "做题不能马虎。", examplePinyin: "Zuò tí bùnéng mǎhu.", exampleTranslation: "You shouldn't be careless when answering questions." },
+            { hanzi: "关心", pinyin: "guānxīn", meaning: "memperhatikan", example: "谢谢你的关心。", examplePinyin: "Xièxie nǐ de guānxīn.", exampleTranslation: "Thank you for your concern." },
+            { hanzi: "地图", pinyin: "dìtú", meaning: "peta", example: "看地图找路线。", examplePinyin: "Kàn dìtú zhǎo lùxiàn.", exampleTranslation: "Look at the map to find the route." },
+            { hanzi: "电子邮件", pinyin: "diànzǐ yóujiàn", meaning: "email", example: "我给你发了电子邮件。", examplePinyin: "Wǒ gěi nǐ fā le diànzǐ yóujiàn.", exampleTranslation: "I sent you an email." },
+            { hanzi: "动物", pinyin: "dòngwù", meaning: "hewan", example: "动物园里有很多动物。", examplePinyin: "Dòngwùyuán lǐ yǒu hěn duō dòngwù.", exampleTranslation: "There are many animals in the zoo." },
+            { hanzi: "段", pinyin: "duàn", meaning: "paragraf", example: "请读第一段。", examplePinyin: "Qǐng dú dì yī duàn.", exampleTranslation: "Please read the first paragraph." },
+            { hanzi: "短", pinyin: "duǎn", meaning: "pendek", example: "这篇短文很有趣。", examplePinyin: "Zhè piān duǎnwén hěn yǒu qù.", exampleTranslation: "This short article is very interesting." },
+            { hanzi: "锻炼", pinyin: "duànliàn", meaning: "olahraga", example: "坚持锻炼身体好。", examplePinyin: "Jiānchí duànliàn shēntǐ hǎo.", exampleTranslation: "Persisting in exercise leads to good health." },
+            { hanzi: "饿", pinyin: "è", meaning: "laper", example: "我有点饿了。", examplePinyin: "Wǒ yǒudiǎn è le.", exampleTranslation: "I am a bit hungry." },
+            { hanzi: "耳朵", pinyin: "ěrduo", meaning: "telinga", example: "兔子的耳朵很长。", examplePinyin: "Tùzi de ěrduo hěn cháng.", exampleTranslation: "A rabbit's ears are very long." },
+            { hanzi: "发烧", pinyin: "fāshāo", meaning: "demam", example: "他今天发烧生病了。", examplePinyin: "Tā jīntiān fāshāo shēngbìng le.", exampleTranslation: "He has a fever today." },
+            { hanzi: "发现", pinyin: "fāxiàn", meaning: "menemukan", example: "我发现了一个新地方。", examplePinyin: "Wǒ fāxiàn le yī gè xīn dìfang.", exampleTranslation: "I discovered a new place." },
+            { hanzi: "方便", pinyin: "fāngbiàn", meaning: "convenient", example: "坐地铁很方便。", examplePinyin: "Zuò dìtiě hěn fāngbiàn.", exampleTranslation: "Taking the subway is very convenient." },
+            { hanzi: "顺便", pinyin: "shùnbiàn", meaning: "sekalian", example: "顺便帮你买东西。", examplePinyin: "Shùnbiàn bāng nǐ mǎi dōngxi.", exampleTranslation: "Buy things for you while I'm at it." },
+            { hanzi: "便宜", pinyin: "piányi", meaning: "cheap", example: "这件衣服很便宜。", examplePinyin: "Zhè jiàn yīfu hěn piányi.", exampleTranslation: "This piece of clothing is cheap." },
+            { hanzi: "随便", pinyin: "suíbiàn", meaning: "terserah", example: "请随便坐。", examplePinyin: "Qǐng suíbiàn zuò.", exampleTranslation: "Please sit anywhere you like." },
+            { hanzi: "附近", pinyin: "fùjìn", meaning: "dekat", example: "超市就在附近。", examplePinyin: "Chāoshì jiù zài fùjìn.", exampleTranslation: "The supermarket is nearby." },
+            { hanzi: "感冒", pinyin: "gǎnmào", meaning: "flu", example: "天冷容易感冒。", examplePinyin: "Tiān lěng róngyì gǎnmào.", exampleTranslation: "It is easy to catch a cold in cold weather." },
+            { hanzi: "感兴趣", pinyin: "gǎn xīngqù", meaning: "tertarik", example: "我对音乐很感兴趣。", examplePinyin: "Wǒ duì yīnyuè hěn gǎn xīngqù.", exampleTranslation: "I am very interested in music." },
+            { hanzi: "根据", pinyin: "gēnjù", meaning: "berdasarkan", example: "根据规定操作。", examplePinyin: "Gēnjù guīdìng cāozuò.", exampleTranslation: "Operate according to regulations." },
+            { hanzi: "更", pinyin: "gèng", meaning: "lebih", example: "明天天气会更好。", examplePinyin: "Míngtiān tiānqì huì gèng hǎo.", exampleTranslation: "Tomorrow's weather will be even better." },
+            { hanzi: "使", pinyin: "shǐ", meaning: "membuat", example: "这使我非常高兴。", examplePinyin: "Zhè shǐ wǒ fēicháng gāoxìng.", exampleTranslation: "This makes me very happy." },
+            { hanzi: "便", pinyin: "biàn", meaning: "nyaman/lalu", example: "有了网购便很方便。", examplePinyin: "Yǒu le wǎnggòu biàn hěn fāngbiàn.", exampleTranslation: "Online shopping makes things very convenient." },
+            { hanzi: "故事", pinyin: "gùshi", meaning: "cerita", example: "这个故事很精彩。", examplePinyin: "Zhè gè gùshi hěn jīngcǎi.", exampleTranslation: "This story is wonderful." },
+            { hanzi: "事故", pinyin: "shìgù", meaning: "kecelakaan", example: "路上发生了交通事故。", examplePinyin: "Lùshang fāshēng le jiāotōng shìgù.", exampleTranslation: "A traffic accident happened on the road." },
+            { hanzi: "关于", pinyin: "guānyú", meaning: "mengenai", example: "关于这个问题我们再讨论。", examplePinyin: "Guānyú zhè gè wèntí wǒmen zài tǎolùn.", exampleTranslation: "Regarding this problem, we will discuss it further." },
+            { hanzi: "航班", pinyin: "hángbān", meaning: "penerbangan", example: "航班准时起飞。", examplePinyin: "Hángbān zhǔnshí qǐfēi.", exampleTranslation: "The flight takes off on time." },
+            { hanzi: "黑板", pinyin: "hēibǎn", meaning: "papan tulis hitam", example: "老师在黑板上写字。", examplePinyin: "Lǎoshī zài hēibǎn shang xiězì.", exampleTranslation: "The teacher writes on the blackboard." },
+            { hanzi: "甚至", pinyin: "shènzhì", meaning: "bahkan", example: "他甚至不知道我的名字。", examplePinyin: "Tā shènzhì bù zhīdào wǒ de míngzi.", exampleTranslation: "He doesn't even know my name." },
+            { hanzi: "环境", pinyin: "huánjìng", meaning: "lingkungan", example: "这里的环境很安静。", examplePinyin: "Zhèlǐ de huánjìng hěn ānjìng.", exampleTranslation: "The environment here is very quiet." },
+            { hanzi: "换", pinyin: "huàn", meaning: "menukar", example: "我想换一件衣服。", examplePinyin: "Wǒ xiǎng huàn yī jiàn yīfu.", exampleTranslation: "I want to change clothes." },
+            { hanzi: "还", pinyin: "huán", meaning: "mengembalikan", example: "记得还书给图书馆。", examplePinyin: "Jìde huán shū gěi túshūguǎn.", exampleTranslation: "Remember to return the book to the library." },
+            { hanzi: "会议", pinyin: "huìyì", meaning: "rapat", example: "会议将在两点开始。", examplePinyin: "Huìyì jiāng zài liǎng diǎn kāishǐ.", exampleTranslation: "The meeting will start at two o'clock." },
+            { hanzi: "回忆", pinyin: "huíyì", meaning: "mengenang", example: "这些回忆很美好。", examplePinyin: "Zhèxiē huíyì hěn měihǎo.", exampleTranslation: "These memories are beautiful." },
+            { hanzi: "几乎", pinyin: "jīhū", meaning: "hampir", example: "我几乎忘了这件事。", examplePinyin: "Wǒ jīhū wàng le zhè jiàn shì.", exampleTranslation: "I almost forgot about this." },
+            { hanzi: "机会", pinyin: "jīhuì", meaning: "kesempatan", example: "这是一个好机会。", examplePinyin: "Zhè shì yī gè hǎo jīhuì.", exampleTranslation: "This is a good opportunity." },
+            { hanzi: "极", pinyin: "jí", meaning: "sangat", example: "这个风景美极了。", examplePinyin: "Zhè gè fēngjǐng měi jí le.", exampleTranslation: "This scenery is extremely beautiful." },
+            { hanzi: "季节", pinyin: "jìjié", meaning: "musim", example: "春天是个美好的季节。", examplePinyin: "Chūntiān shì gè měihǎo de jìjié.", exampleTranslation: "Spring is a wonderful season." },
+            { hanzi: "检查", pinyin: "jiǎnchá", meaning: "mengecek", example: "做完作业要检查。", examplePinyin: "Zuò wán zuòyè yào jiǎnchá.", exampleTranslation: "Check your homework after finishing it." },
+            { hanzi: "见面", pinyin: "jiànmiàn", meaning: "menemui", example: "很高兴和您见面。", examplePinyin: "Hěn gāoxìng hé nín jiànmiàn.", exampleTranslation: "Nice to meet you." },
+            { hanzi: "降落", pinyin: "jiàngluò", meaning: "turun", example: "飞机准备降落。", examplePinyin: "Fēijī zhǔnbèi jiàngluò.", exampleTranslation: "The airplane is preparing to land." },
+            { hanzi: "脚", pinyin: "jiǎo", meaning: "kaki", example: "我的脚很痛。", examplePinyin: "Wǒ de jiǎo hěn tòng.", exampleTranslation: "My foot hurts." },
+            { hanzi: "接", pinyin: "jiē", meaning: "menerima/jemput", example: "我去机场接朋友。", examplePinyin: "Wǒ qù jīchǎng jiē péngyou.", exampleTranslation: "I go to the airport to pick up my friend." },
+            { hanzi: "街道", pinyin: "jiēdào", meaning: "jalan", example: "街道两旁种满了树。", examplePinyin: "Jiēdào liǎngpáng zhòng mǎn le shù.", exampleTranslation: "Both sides of the street are planted with trees." },
+            { hanzi: "结婚", pinyin: "jiéhūn", meaning: "menikah", example: "他们去年结婚了。", examplePinyin: "Tāmen qùnián jiéhūn le.", exampleTranslation: "They got married last year." },
+            { hanzi: "结束", pinyin: "jiéshù", meaning: "mengakhiri", example: "活动顺利结束。", examplePinyin: "Huódòng shùnlì jiéshù.", exampleTranslation: "The event ended smoothly." },
+            { hanzi: "解决", pinyin: "jiějué", meaning: "menyelesaikan", example: "问题终于解决了。", examplePinyin: "Wèntí zhōngyú jiějué le.", exampleTranslation: "The problem was finally solved." },
+            { hanzi: "借", pinyin: "jiè", meaning: "pinjam", example: "我可以借你的笔吗？", examplePinyin: "Wǒ kěyǐ jiè nǐ de bǐ ma?", exampleTranslation: "May I borrow your pen?" },
+            { hanzi: "久", pinyin: "jiǔ", meaning: "lama", example: "好久不见！", examplePinyin: "Hǎojiǔ bù jiàn!", exampleTranslation: "Long time no see!" },
+            { hanzi: "旧", pinyin: "jiù", meaning: "lama/kuno", example: "这辆自行车旧了。", examplePinyin: "Zhè liàng zìxíngchē jiù le.", exampleTranslation: "This bicycle is old." },
+            { hanzi: "决定", pinyin: "juédìng", meaning: "memutuskannya", example: "我决定去中国留学。", examplePinyin: "Wǒ juédìng qù Zhōngguó liúxué.", exampleTranslation: "I decided to study abroad in China." },
+            { hanzi: "刻", pinyin: "kè", meaning: "seperempat", example: "现在是五点一刻。", examplePinyin: "Xiànzài shì wǔ diǎn yī kè.", exampleTranslation: "It is a quarter past five now." },
+            { hanzi: "客人", pinyin: "kèrén", meaning: "tamu", example: "家里来了客人。", examplePinyin: "Jiālǐ lái le kèrén.", exampleTranslation: "Guests arrived at home." },
+            { hanzi: "裤子", pinyin: "kùzi", meaning: "celana", example: "这条裤子很合适。", examplePinyin: "Zhè tiáo kùzi hěn héshì.", exampleTranslation: "These pants fit well." },
+            { hanzi: "脸", pinyin: "liǎn", meaning: "muka", example: "洗洗脸更清醒。", examplePinyin: "Xǐ xǐ liǎn gèng qīngxǐng.", exampleTranslation: "Washing your face makes you clearer." },
+            { hanzi: "历史", pinyin: "lìshǐ", meaning: "sejarah", example: "我对中国历史感兴趣。", examplePinyin: "Wǒ duì Zhōngguó lìshǐ gǎn xīngqù.", exampleTranslation: "I am interested in Chinese history." },
+            { hanzi: "邻居", pinyin: "línjū", meaning: "tetangga", example: "我和邻居关系很好。", examplePinyin: "Wǒ hé línjū guānxi hěn hǎo.", exampleTranslation: "I have a good relationship with my neighbor." },
+            { hanzi: "帽子", pinyin: "màozi", meaning: "topi", example: "夏天戴帽子可以遮阳。", examplePinyin: "Xiàtiān dài màozi kěyǐ zhēyáng.", exampleTranslation: "Wearing a hat in summer provides shade." },
+            { hanzi: "年级", pinyin: "niánjí", meaning: "kelas/tingkat", example: "我是三年级的学生。", examplePinyin: "Wǒ shì sān niánjí de xuésheng.", exampleTranslation: "I am a third-grade student." },
+            { hanzi: "胖", pinyin: "pàng", meaning: "gemuk", example: "猫咪吃得胖胖的。", examplePinyin: "Māomī chī de pàng pàng de.", exampleTranslation: "The cat eats until it gets chubby." },
+            { hanzi: "皮鞋", pinyin: "píxié", meaning: "sepatu kulit", example: "这双皮鞋很舒服。", examplePinyin: "Zhè shuāng píxié hěn shūfu.", exampleTranslation: "This pair of leather shoes is comfortable." },
+            { hanzi: "普通话", pinyin: "pǔtōnghuà", meaning: "bahasa mandarin", example: "他的普通话很标准。", examplePinyin: "Tā de pǔtōnghuà hěn biāozhǔn.", exampleTranslation: "His Mandarin is very standard." },
+            { hanzi: "其实", pinyin: "qíshí", meaning: "sebenarnya", example: "其实这件事很简单。", examplePinyin: "Qíshí zhè jiàn shì hěn jiǎndān.", exampleTranslation: "Actually, this matter is very simple." },
+            { hanzi: "即使", pinyin: "jíshǐ", meaning: "sekalipun", example: "即使下雨我也要去。", examplePinyin: "Jíshǐ xiàyǔ wǒ yě yào qù.", exampleTranslation: "Even if it rains, I will go." },
+            { hanzi: "起飞", pinyin: "qǐfēi", meaning: "take off", example: "飞机将在十点起飞。", examplePinyin: "Fēijī jiāng zài shí diǎn qǐfēi.", exampleTranslation: "The plane will take off at ten." },
+            { hanzi: "裙子", pinyin: "qúnzi", meaning: "rok", example: "她穿了一条红裙子。", examplePinyin: "Tā chuān le yī tiáo hóng qúnzi.", exampleTranslation: "She is wearing a red skirt." },
+            { hanzi: "舒服", pinyin: "shūfu", meaning: "nyaman", example: "躺在床上很舒服。", examplePinyin: "Tǎng zài chuángshang hěn shūfu.", exampleTranslation: "Lying in bed is very comfortable." },
+            { hanzi: "叔叔", pinyin: "shūshu", meaning: "paman", example: "叔叔送我一份礼物。", examplePinyin: "Shūshu sòng wǒ yī fèn lǐwù.", exampleTranslation: "Uncle gave me a present." },
+            { hanzi: "树", pinyin: "shù", meaning: "pohon", example: "树上有很多鸟。", examplePinyin: "Shù shang yǒu hěn duō niǎo.", exampleTranslation: "There are many birds in the tree." },
+            { hanzi: "刷牙", pinyin: "shuāyá", meaning: "sikat gigi", example: "睡觉前要刷牙。", examplePinyin: "Shuìjiào qián yào shuāyá.", exampleTranslation: "Brush your teeth before going to sleep." },
+            { hanzi: "司机", pinyin: "sījī", meaning: "supir", example: "出租车司机很热情。", examplePinyin: "Chūzūchē sījī hěn rèqíng.", exampleTranslation: "The taxi driver is very enthusiastic." },
+            { hanzi: "体育", pinyin: "tǐyù", meaning: "olahraga", example: "我喜欢体育课。", examplePinyin: "Wǒ xǐhuan tǐyù kè.", exampleTranslation: "I like PE class." },
+            { hanzi: "腿", pinyin: "tuǐ", meaning: "kaki/paha", example: "走久了腿有点酸。", examplePinyin: "Zǒu jiǔ le tuǐ yǒudiǎn suān.", exampleTranslation: "My legs feel tired after walking for so long." },
+            { hanzi: "新闻", pinyin: "xīnwén", meaning: "berita", example: "看新闻了解国家大事。", examplePinyin: "Kàn xīnwén liǎojiě guójiā dàshì.", exampleTranslation: "Watch news to learn national affairs." },
+            { hanzi: "饮料", pinyin: "yǐnliào", meaning: "minuman", example: "你想喝什么饮料？", examplePinyin: "Nǐ xiǎng hē shénme yǐnliào?", exampleTranslation: "What beverage would you like to drink?" },
+            { hanzi: "遇到", pinyin: "yùdào", meaning: "ketemu", example: "路上遇到了老朋友。", examplePinyin: "Lùshang yùdào le lǎo péngyou.", exampleTranslation: "Met an old friend on the road." },
+            { hanzi: "愿意", pinyin: "yuànyì", meaning: "mau", example: "我愿意帮助你。", examplePinyin: "Wǒ yuànyì bāngzhù nǐ.", exampleTranslation: "I am willing to help you." },
+            { hanzi: "照顾", pinyin: "zhàogù", meaning: "memelihara", example: "请照顾好自己。", examplePinyin: "Qǐng zhàogù hǎo zìjǐ.", exampleTranslation: "Please take good care of yourself." },
+            { hanzi: "中间", pinyin: "zhōngjiān", meaning: "tengah", example: "他就站在中间。", examplePinyin: "Tā jiù zhàn zài zhōngjiān.", exampleTranslation: "He is standing in the middle." },
+            { hanzi: "终于", pinyin: "zhōngyú", meaning: "akhirnya", example: "我们终于到了。", examplePinyin: "Wǒmen zhōngyú dào le.", exampleTranslation: "We finally arrived." },
+            { hanzi: "嘴", pinyin: "zuǐ", meaning: "bibir/mulut", example: "张开嘴，说“啊”。", examplePinyin: "Zhāng kāi zuǐ, shuō 'ā'.", exampleTranslation: "Open your mouth and say 'ah'." },
+            { hanzi: "安排", pinyin: "ānpái", meaning: "mengatur", example: "行程已经安排好了。", examplePinyin: "Xíngchéng yǐjīng ānpái hǎo le.", exampleTranslation: "The itinerary has been arranged." },
+            { hanzi: "按照", pinyin: "ànzhào", meaning: "menurut", example: "按照要求完成工作。", examplePinyin: "Ànzhào yāoqiú wánchéng gōngzuò.", exampleTranslation: "Complete the task according to requirements." },
+            { hanzi: "棒", pinyin: "bàng", meaning: "bagus", example: "你做得真棒！", examplePinyin: "Nǐ zuò de zhēn bàng!", exampleTranslation: "You did a really great job!" },
+            { hanzi: "保证", pinyin: "bǎozhèng", meaning: "menjamin", example: "我保证按时完成。", examplePinyin: "Wǒ bǎozhèng ànshí wánchéng.", exampleTranslation: "I guarantee to complete it on time." },
+            { hanzi: "抱歉", pinyin: "bàoqiàn", meaning: "meminta maaf", example: "非常抱歉让你久等了。", examplePinyin: "Fēicháng bàoqiàn ràng nǐ jiǔ děng le.", exampleTranslation: "Very sorry to keep you waiting." },
+            { hanzi: "倍", pinyin: "bèi", meaning: "kali", example: "产量增加了一倍。", examplePinyin: "Chǎnliàng zēngjiā le yī bèi.", exampleTranslation: "Output has doubled." },
+            { hanzi: "遍", pinyin: "biàn", meaning: "kali", example: "请你说一遍。", examplePinyin: "Qǐng nǐ shuō yī biàn.", exampleTranslation: "Please say it once again." },
+            { hanzi: "标准", pinyin: "biāozhǔn", meaning: "standard", example: "发音非常标准。", examplePinyin: "Fāyīn fēicháng biāozhǔn.", exampleTranslation: "Pronunciation is very standard." },
+            { hanzi: "表格", pinyin: "biǎogé", meaning: "daftar/tabel", example: "请填写这张表格。", examplePinyin: "Qǐng tiánxiě zhè zhāng biǎogé.", exampleTranslation: "Please fill in this form." },
+            { hanzi: "表示", pinyin: "biǎoshì", meaning: "menunjukan", example: "微笑表示友好。", examplePinyin: "Wēixiào biǎoshì yǒu hǎo.", exampleTranslation: "A smile indicates friendliness." },
+            { hanzi: "表演", pinyin: "biǎoyǎn", meaning: "pertunjukan", example: "今晚有京剧表演。", examplePinyin: "Jīnwǎn yǒu Jīngjù biǎoyǎn.", exampleTranslation: "There is a Beijing opera performance tonight." },
+            { hanzi: "表扬", pinyin: "biǎoyáng", meaning: "memuji", example: "老师表扬了他。", examplePinyin: "Lǎoshī biǎoyáng le tā.", exampleTranslation: "The teacher praised him." },
+            { hanzi: "并且", pinyin: "bìngqiě", meaning: "lagi pula", example: "她聪明并且勤奋。", examplePinyin: "Tā cōngmíng bìngqiě qínfèn.", exampleTranslation: "She is smart and diligent." },
+            { hanzi: "博士", pinyin: "bóshì", meaning: "doktor", example: "他在攻读博士学位。", examplePinyin: "Tā zài gōngdú bóshì xuéwèi.", exampleTranslation: "He is studying for a doctorate degree." },
+            { hanzi: "擦", pinyin: "cā", meaning: "menggosok", example: "请擦干净桌子。", examplePinyin: "Qǐng cā gānjìng zhuōzi.", exampleTranslation: "Please wipe the table clean." },
+            { hanzi: "猜", pinyin: "cāi", meaning: "menebak", example: "你猜猜我是谁。", examplePinyin: "Nǐ cāi cāi wǒ shì shéi.", exampleTranslation: "Guess who I am." },
+            { hanzi: "材料", pinyin: "cáiliào", meaning: "bahan", example: "准备会议材料。", examplePinyin: "Zhǔnbèi huìyì cáiliào.", exampleTranslation: "Prepare meeting materials." },
+            { hanzi: "参观", pinyin: "cānguān", meaning: "mengunjungi", example: "明天去参观博物馆。", examplePinyin: "Míngtiān qù cānguān bówùguǎn.", exampleTranslation: "Visit the museum tomorrow." },
+            { hanzi: "餐厅", pinyin: "cāntīng", meaning: "restoran", example: "我们在餐厅吃饭。", examplePinyin: "Wǒmen zài cāntīng chīfàn.", exampleTranslation: "We eat in the restaurant." },
+            { hanzi: "长江", pinyin: "Cháng Jiāng", meaning: "sungai yangtze", example: "长江是中国第一大河。", examplePinyin: "Cháng Jiāng shì Zhōngguó dì yī dàhé.", exampleTranslation: "The Yangtze River is the largest river in China." },
+            { hanzi: "成为", pinyin: "chéngwéi", meaning: "menjadi", example: "他想成为一名医生。", examplePinyin: "Tā xiǎng chéngwéi yī míng yīshēng.", exampleTranslation: "He wants to become a doctor." },
+            { hanzi: "城市", pinyin: "chéngshì", meaning: "kota", example: "这座城市非常美丽。", examplePinyin: "Zhè zuò chéngshì fēicháng měilì.", exampleTranslation: "This city is very beautiful." },
+            { hanzi: "诚实", pinyin: "chéngshí", meaning: "jujur", example: "做一个诚实的人。", examplePinyin: "Zuò yī gè chéngshí de rén.", exampleTranslation: "Be an honest person." },
+            { hanzi: "乘坐", pinyin: "chéngzuò", meaning: "menumpang", example: "欢迎乘坐本次航班。", examplePinyin: "Huānyíng chéngzuò běn cì hángbān.", exampleTranslation: "Welcome aboard this flight." },
+            { hanzi: "吃惊", pinyin: "chījīng", meaning: "terkejut", example: "听到消息我很吃惊。", examplePinyin: "Tīngdào xiāoxi wǒ hěn chījīng.", exampleTranslation: "I was surprised to hear the news." },
+            { hanzi: "重新", pinyin: "chóngxīn", meaning: "sekali lagi", example: "请重新写一遍。", examplePinyin: "Qǐng chóngxīn xiě yī biàn.", exampleTranslation: "Please rewrite it again." },
+            { hanzi: "出差", pinyin: "chūchāi", meaning: "bisnis trip", example: "爸爸去北京出差了。", examplePinyin: "Bàba qù Běijīng chūchāi le.", exampleTranslation: "Dad went to Beijing on business." },
+            { hanzi: "厨房", pinyin: "chúfáng", meaning: "dapur", example: "妈妈在厨房做饭。", examplePinyin: "Māma zài chúfáng zuòfàn.", exampleTranslation: "Mom is cooking in the kitchen." },
+            { hanzi: "传真", pinyin: "chuánzhēn", meaning: "fax", example: "请给我发一份传真。", examplePinyin: "Qǐng gěi wǒ fā yī fèn chuánzhēn.", exampleTranslation: "Please send me a fax." },
+            { hanzi: "存", pinyin: "cún", meaning: "menabung", example: "去银行存钱。", examplePinyin: "Qù yínháng cún qián.", exampleTranslation: "Go to the bank to deposit money." },
+            { hanzi: "错误", pinyin: "cuòwù", meaning: "salah", example: "承认并改正错误。", examplePinyin: "Chéngrèn bìng gǎizhèng cuòwù.", exampleTranslation: "Admit and correct mistakes." },
+            { hanzi: "打扮", pinyin: "dǎban", meaning: "dandan", example: "她打扮得很漂亮。", examplePinyin: "Tā dǎban de hěn piàoliang.", exampleTranslation: "She dressed up beautifully." },
+            { hanzi: "打印", pinyin: "dǎyìn", meaning: "mencetak", example: "把这份文件打印出来。", examplePinyin: "Bǎ zhè fèn wénjiàn dǎyìn chūlái.", exampleTranslation: "Print out this document." },
+            { hanzi: "打招呼", pinyin: "dǎ zhāohu", meaning: "menyapa", example: "见面时要主动打招呼。", examplePinyin: "Jiànmiàn shí yào zhǔdòng dǎ zhāohu.", exampleTranslation: "Greet proactively when meeting." },
+            { hanzi: "打针", pinyin: "dǎzhēn", meaning: "menyuntik", example: "感冒了需要打针。", examplePinyin: "Gǎnmào le xūyào dǎzhēn.", exampleTranslation: "Getting an injection is needed for a cold." },
+            { hanzi: "大概", pinyin: "dàgài", meaning: "hampir/mungkin", example: "今天大概会下雨。", examplePinyin: "Jīntiān dàgài huì xiàyǔ.", exampleTranslation: "It will probably rain today." },
+            { hanzi: "大使馆", pinyin: "dàshǐguǎn", meaning: "kedutaan besar", example: "去大使馆办理签证。", examplePinyin: "Qù dàshǐguǎn bànlǐ qiānzhèng.", exampleTranslation: "Go to embassy to apply for a visa." },
+            { hanzi: "大约", pinyin: "dàyuē", meaning: "kira-kira", example: "这需要大约三小时。", examplePinyin: "Zhè xūyào dàyuē sān xiǎoshí.", exampleTranslation: "This takes about three hours." },
+            { hanzi: "大夫", pinyin: "dàifu", meaning: "dokter", example: "大夫建议多休息。", examplePinyin: "Dàifu jiànyì duō xiūxi.", exampleTranslation: "The doctor suggested getting more rest." },
+            { hanzi: "戴", pinyin: "dài", meaning: "memakai", example: "冬天要戴帽子。", examplePinyin: "Dōngtiān yào dài màozi.", exampleTranslation: "Wear a hat in winter." },
+            { hanzi: "刀", pinyin: "dāo", meaning: "pisau", example: "用刀切水果。", examplePinyin: "Yòng dāo qiē shuǐguǒ.", exampleTranslation: "Use a knife to cut fruit." },
+            { hanzi: "到处", pinyin: "dàochù", meaning: "di mana-mana", example: "公园里到处都是花。", examplePinyin: "Gōngyuán lǐ dàochù dōu shì huā.", exampleTranslation: "There are flowers everywhere in the park." },
+            { hanzi: "导游", pinyin: "dǎoyóu", meaning: "tour guide", example: "导游讲解得很详细。", examplePinyin: "Dǎoyóu jiǎngjiě de hěn xiángxì.", exampleTranslation: "The guide explained in detail." },
+            { hanzi: "倒", pinyin: "dào", meaning: "jatuh/tuang", example: "给客人倒一杯茶。", examplePinyin: "Gěi kèrén dào yī bēi chá.", exampleTranslation: "Pour a cup of tea for the guest." },
+            { hanzi: "到底", pinyin: "dàodǐ", meaning: "pada akhirnya", example: "你到底想表达什么？", examplePinyin: "Nǐ dàodǐ xiǎng biǎodá shénme?", exampleTranslation: "What do you actually want to express?" },
+            { hanzi: "道歉", pinyin: "dàoqiàn", meaning: "meminta maaf", example: "向朋友诚恳道歉。", examplePinyin: "Xiàng péngyou chéngkěn dàoqiàn.", exampleTranslation: "Apologize sincerely to the friend." },
+            { hanzi: "得意", pinyin: "déyì", meaning: "bangga", example: "考试考了好成绩他很得意。", examplePinyin: "Kǎoshì kǎo le hǎo chéngjì tā hěn déyì.", exampleTranslation: "He was pleased with his good exam results." },
+            { hanzi: "登机牌", pinyin: "dēngjīpái", meaning: "boarding pass", example: "请出示您的登机牌。", examplePinyin: "Qǐng chūshì nín de dēngjīpái.", exampleTranslation: "Please show your boarding pass." },
+            { hanzi: "低", pinyin: "dī", meaning: "rendah", example: "请低头避开障碍物。", examplePinyin: "Qǐng dītóu bìkāi zhàng'àiwù.", exampleTranslation: "Please lower your head to avoid obstacles." },
+            { hanzi: "地点", pinyin: "dìdiǎn", meaning: "lokasi", example: "集合地点在校门口。", examplePinyin: "Jíhé dìdiǎn zài xiào ménkǒu.", exampleTranslation: "The gathering place is at the school gate." },
+            { hanzi: "底", pinyin: "dǐ", meaning: "dasar", example: "文章的结尾在页底。", examplePinyin: "Wénzhāng de jiéwěi zài yè dǐ.", exampleTranslation: "The end of article is at the bottom of the page." },
+            { hanzi: "地址", pinyin: "dìzhǐ", meaning: "alamat", example: "请写下您的详细地址。", examplePinyin: "Qǐng xiě xià nín de xiángxì dìzhǐ.", exampleTranslation: "Please write down your detailed address." },
+            { hanzi: "调查", pinyin: "diàochá", meaning: "investigasi", example: "警察正在调查情况。", examplePinyin: "Jǐngchá zhèngzài diàochá qíngkuàng.", exampleTranslation: "The police are investigating the situation." },
+            { hanzi: "掉", pinyin: "diào", meaning: "jatuh", example: "书掉在了地上。", examplePinyin: "Shū diào zài le dìshang.", exampleTranslation: "The book fell to the ground." },
+            { hanzi: "堵车", pinyin: "dǔchē", meaning: "macet", example: "上下班高峰容易堵车。", examplePinyin: "Shàngxiàbān gāofēng róngyì dǔchē.", exampleTranslation: "Traffic jams easily occur during rush hours." },
+            { hanzi: "肚子", pinyin: "dùzi", meaning: "perut", example: "吃坏东西肚子疼。", examplePinyin: "Chī huài dōngxi dùzi téng.", exampleTranslation: "Eating bad food gives a stomachache." },
+            { hanzi: "发生", pinyin: "fāshēng", meaning: "terjadi", example: "这里发生了火灾。", examplePinyin: "Zhèlǐ fāshēng le huǒzāi.", exampleTranslation: "A fire happened here." },
+            { hanzi: "发展", pinyin: "fāzhǎn", meaning: "berkembang", example: "科技发展迅速。", examplePinyin: "Kējì fāzhǎn xùnsù.", exampleTranslation: "Technology is developing rapidly." },
+            { hanzi: "烦恼", pinyin: "fánnǎo", meaning: "risau", example: "遇到烦恼要多沟通。", examplePinyin: "Yùdào fánnǎo yào duō gōutōng.", exampleTranslation: "Communicate more when encountering troubles." },
+            { hanzi: "放松", pinyin: "fàngsōng", meaning: "rileks", example: "听音乐可以放松心情。", examplePinyin: "Tīng yīnyuè kěyǐ fàngsōng xīnqíng.", exampleTranslation: "Listening to music can relax your mood." },
+            { hanzi: "费用", pinyin: "fèiyòng", meaning: "biaya", example: "这次旅行的费用很高。", examplePinyin: "Zhè cì lǚxíng de fèiyòng hěn gāo.", exampleTranslation: "The cost of this trip is high." },
+            { hanzi: "符合", pinyin: "fúhé", meaning: "sesuai", example: "你的条件符合要求。", examplePinyin: "Nǐ de tiáojiàn fúhé yāoqiú.", exampleTranslation: "Your qualifications meet requirements." },
+            { hanzi: "付款", pinyin: "fùkuǎn", meaning: "membayar", example: "您可以用手机付款。", examplePinyin: "Nín kěyǐ yòng shǒujī fùkuǎn.", exampleTranslation: "You can pay using your mobile phone." },
+            { hanzi: "负责", pinyin: "fùzé", meaning: "tanggung jawab", example: "他对这项项目负责。", examplePinyin: "Tā duì zhè xiàng xiàngmù fùzé.", exampleTranslation: "He is responsible for this project." },
+            { hanzi: "复印", pinyin: "fùyìn", meaning: "fotokopi", example: "请复印这份资料。", examplePinyin: "Qǐng fùyìn zhè fèn zīliào.", exampleTranslation: "Please photocopy this document." },
+            { hanzi: "赶", pinyin: "gǎn", meaning: "mengejar", example: "快点跑，赶上公交车。", examplePinyin: "Kuài diǎn pǎo, gǎn shàng gōngjiāochē.", exampleTranslation: "Run faster to catch the bus." },
+            { hanzi: "敢", pinyin: "gǎn", meaning: "berani", example: "勇敢点，敢于尝试。", examplePinyin: "Yǒnggǎn diǎn, gǎnyú chángshì.", exampleTranslation: "Be brave and dare to try." },
+            { hanzi: "感动", pinyin: "gǎndòng", meaning: "mengharukan", example: "这部电影让人感动。", examplePinyin: "Zhè bù diànyǐng ràng rén gǎndòng.", exampleTranslation: "This movie moves people." },
+            { hanzi: "感觉", pinyin: "gǎnjué", meaning: "merasa", example: "我感觉今天特别累。", examplePinyin: "Wǒ gǎnjué jīntiān tèbié lèi.", exampleTranslation: "I feel particularly tired today." },
+            { hanzi: "感情", pinyin: "gǎnqíng", meaning: "perasaan", example: "他们俩的感情很好。", examplePinyin: "Tāmen liǎ de gǎnqíng hěn hǎo.", exampleTranslation: "The two of them have a deep affection." },
+            { hanzi: "感谢", pinyin: "gǎnxiè", meaning: "berterimakasih", example: "真心感谢你的帮助。", examplePinyin: "Zhēnxīn gǎnxiè nǐ de bāngzhù.", exampleTranslation: "Sincerest thanks for your help." },
+            { hanzi: "高级", pinyin: "gāojí", meaning: "tingkat tinggi", example: "这是一间高级酒店。", examplePinyin: "Zhè shì yī jiān gāojí jiǔdiàn.", exampleTranslation: "This is a high-class hotel." },
+            { hanzi: "高速公路", pinyin: "gāosù gōnglù", meaning: "jalan tol", example: "高速公路开车速度快。", examplePinyin: "Gāosù gōnglù kāichē sùdù kuài.", exampleTranslation: "Driving speed is fast on expressway." },
+            { hanzi: "功夫", pinyin: "gōngfu", meaning: "kung fu", example: "中国功夫闻名世界。", examplePinyin: "Zhōngguó gōngfu wénmíng shìjiè.", exampleTranslation: "Chinese Kung Fu is famous worldwide." },
+            { hanzi: "估计", pinyin: "gūjì", meaning: "memperkirakan", example: "估计半小时后能到达。", examplePinyin: "Gūjì bàn xiǎoshí hòu néng dàodá.", exampleTranslation: "Estimated to arrive in half an hour." },
+            { hanzi: "预计", pinyin: "yùjì", meaning: "di perkirakan", example: "预计明天会有暴风雨。", examplePinyin: "Yùjì míngtiān huì yǒu bàofēngyǔ.", exampleTranslation: "Storms are expected tomorrow." },
+            { hanzi: "鼓励", pinyin: "gǔlì", meaning: "dorongan", example: "多鼓励孩子建立自信。", examplePinyin: "Duō gǔlì háizi jiànlì zìxìn.", exampleTranslation: "Encourage children to build confidence." },
+            { hanzi: "故意", pinyin: "gùyì", meaning: "sengaja", example: "对不起，我不是故意的。", examplePinyin: "Duìbuqǐ, wǒ bù shì gùyì de.", exampleTranslation: "Sorry, I didn't do it on purpose." },
+            { hanzi: "顾客", pinyin: "gùkè", meaning: "pelanggan", example: "商场顾客很多。", examplePinyin: "Shāngchǎng gùkè hěn duō.", exampleTranslation: "There are many customers in the mall." },
+            { hanzi: "挂", pinyin: "guà", meaning: "menggantungkan", example: "墙上挂着一幅画。", examplePinyin: "Qiáng shang guà zhe yī fú huà.", exampleTranslation: "A painting is hanging on the wall." },
+            { hanzi: "关键", pinyin: "guānjiàn", meaning: "kunci/persoalan", example: "把握关键的时机。", examplePinyin: "Bǎwò guānjiàn de shíjī.", exampleTranslation: "Grasp the key opportunity." },
+            { hanzi: "观众", pinyin: "guānzhòng", meaning: "penonton", example: "观众鼓掌表示感谢。", examplePinyin: "Guānzhòng gǔzhǎng biǎoshì gǎnxiè.", exampleTranslation: "The audience applauded to show thanks." },
+            { hanzi: "管理", pinyin: "guǎnlǐ", meaning: "mengurus", example: "他负责管理公司团队。", examplePinyin: "Tā fùzé guǎnlǐ gōngsī tuánduì.", exampleTranslation: "He manages the company team." },
+            { hanzi: "广播", pinyin: "guǎngbō", meaning: "menyiarkan", example: "通过广播听收新闻。", examplePinyin: "Tōngguò guǎngbō tīng shōu xīnwén.", exampleTranslation: "Listen to the news through broadcast." },
+            { hanzi: "逛", pinyin: "guàng", meaning: "jalan-jalan", example: "周末陪朋友逛街。", examplePinyin: "Zhōumò péi péngyou guàngjiē.", exampleTranslation: "Go shopping with friends on weekends." },
+            { hanzi: "规定", pinyin: "guīdìng", meaning: "menetapkan", example: "请遵守公共规定。", examplePinyin: "Qǐng zūnshǒu gōnggòng guīdìng.", exampleTranslation: "Please abide by public regulations." },
+            { hanzi: "国籍", pinyin: "guójí", meaning: "kewarganegaraan", example: "请在表上填写国籍。", examplePinyin: "Qǐng zài biǎo shang tiánxiě guójí.", exampleTranslation: "Please fill in nationality on form." },
+            { hanzi: "国际", pinyin: "guójì", meaning: "internasional", example: "国际机场人流量大。", examplePinyin: "Guójì jīchǎng rénliúliàng dà.", exampleTranslation: "Passenger traffic at international airport is high." },
+            { hanzi: "精彩", pinyin: "jīngcǎi", meaning: "luar biasa", example: "比赛过程非常精彩。", examplePinyin: "Bǐsài guòchéng fēicháng jīngcǎi.", exampleTranslation: "The match process was very exciting." },
+            { hanzi: "过程", pinyin: "guòchéng", meaning: "proses", example: "享受学习的过程。", examplePinyin: "Xiǎngshòu xuéxí de guòchéng.", exampleTranslation: "Enjoy the process of learning." },
+            { hanzi: "害羞", pinyin: "hàixiū", meaning: "malu", example: "小姑娘有点害羞。", examplePinyin: "Xiǎo gūniang yǒudiǎn hàixiū.", exampleTranslation: "The little girl is a bit shy." },
+            { hanzi: "寒假", pinyin: "hánjià", meaning: "liburan musim dingin", example: "寒假我们打算去滑雪。", examplePinyin: "Hánjià wǒmen dǎsuàn qù huáxuě.", exampleTranslation: "We plan to go skiing during winter vacation." },
+            { hanzi: "汗", pinyin: "hàn", meaning: "keringat", example: "运动后流了很多汗。", examplePinyin: "Yùdòng hòu liú le hěn duō hàn.", exampleTranslation: "Sweated a lot after exercise." },
+            { hanzi: "合格", pinyin: "hégé", meaning: "memenuhi syarat", example: "检验结果完全合格。", examplePinyin: "Jiǎnyàn jiéguǒ wánquán hégé.", exampleTranslation: "Inspection results fully qualified." },
+            { hanzi: "后悔", pinyin: "hòuhuǐ", meaning: "menyesali", example: "没努力学习我很后悔。", examplePinyin: "Méi nǔlì xuéxí wǒ hěn hòuhuǐ.", exampleTranslation: "I regret not studying hard." },
+            { hanzi: "厚", pinyin: "hòu", meaning: "tebal", example: "这本词典非常厚。", examplePinyin: "Zhè běn cídiǎn fēicháng hòu.", exampleTranslation: "This dictionary is very thick." },
+            { hanzi: "薄的", pinyin: "báode", meaning: "tipis", example: "夏天穿薄的衣服。", examplePinyin: "Xiàtiān chuān báo de yīfu.", exampleTranslation: "Wear thin clothes in summer." },
+            { hanzi: "互联网", pinyin: "hùliánwǎng", meaning: "internet", example: "互联网改变了生活。", examplePinyin: "Hùliánwǎng gǎibiàn le shēnghuó.", exampleTranslation: "The Internet has changed lives." },
+            { hanzi: "怀疑", pinyin: "huáiyí", meaning: "meragukan", example: "没有根据不要怀疑别人。", examplePinyin: "Méiyǒu gēnjù bùyào huáiyí biérén.", exampleTranslation: "Don't suspect others without basis." },
+            { hanzi: "活泼", pinyin: "huópō", meaning: "lincah", example: "小狗性格性格活泼。", examplePinyin: "Xiǎogǒu xìnggé xìnggé huópō.", exampleTranslation: "The puppy has a lively personality." },
+            { hanzi: "获得", pinyin: "huòdé", meaning: "mendapat", example: "他在比赛中获得了第一名。", examplePinyin: "Tā zài bǐsài zhōng huòdé le dì yī míng.", exampleTranslation: "He won first place in competition." },
+            { hanzi: "积极", pinyin: "jījí", meaning: "aktif", example: "积极参与课堂讨论。", examplePinyin: "Jījí cānyù kètáng tǎolùn.", exampleTranslation: "Actively participate in classroom discussion." },
+            { hanzi: "积累", pinyin: "jīlěi", meaning: "mengakumulasi", example: "要多积累工作经验。", examplePinyin: "Yào duō jīlěi gōngzuò jīngyàn.", exampleTranslation: "Accumulate more work experience." },
+            { hanzi: "基础", pinyin: "jīchǔ", meaning: "mendasar", example: "打好语言学习的基础。", examplePinyin: "Dǎ hǎo yǔyán xuéxí de jīchǔ.", exampleTranslation: "Lay a good foundation for language learning." },
+            { hanzi: "激动", pinyin: "jīdòng", meaning: "terharu", example: "听到好消息非常激动。", examplePinyin: "Tīngdào hǎo xiāoxi fēicháng jīdòng.", exampleTranslation: "Extremely excited to hear good news." },
+            { hanzi: "及时", pinyin: "jíshí", meaning: "segera", example: "请及时回复电子邮件。", examplePinyin: "Qǐng jíshí huífù diànzǐ yóujiàn.", exampleTranslation: "Please reply to email promptly." },
+            { hanzi: "计算机", pinyin: "jìsuànjī", meaning: "komputer", example: "他学习计算机专业。", examplePinyin: "Tā xuéxí jìsuànjī zhuānyè.", exampleTranslation: "He studies computer science." },
+            { hanzi: "计算器", pinyin: "jìsuànqì", meaning: "kalkulator", example: "用计算器算账。", examplePinyin: "Yòng jìsuànqì suànzhàng.", exampleTranslation: "Use calculator to do math." },
+            { hanzi: "记者", pinyin: "jìzhě", meaning: "reporter", example: "记者采访了现场目击者。", examplePinyin: "Jìzhě cǎifǎng le xiànchǎng mùjīzhě.", exampleTranslation: "Reporters interviewed eyewitnesses." },
+            { hanzi: "技术", pinyin: "jìshù", meaning: "teknik", example: "他的驾驶技术很好。", examplePinyin: "Tā de jiàshǐ jìshù hěn hǎo.", exampleTranslation: "His driving skill is very good." },
+            { hanzi: "既然", pinyin: "jìrán", meaning: "karena sudah", example: "既然来了，就多坐会儿。", examplePinyin: "Jìrán lái le, jiù duō zuò huìr.", exampleTranslation: "Since you are here, stay longer." },
+            { hanzi: "继续", pinyin: "jìxù", meaning: "continue", example: "休整后继续前进。", examplePinyin: "Xiūzhěng hòu jìxù qiánjìn.", exampleTranslation: "Continue forward after resting." },
+            { hanzi: "家具", pinyin: "jiājù", meaning: "perabotan", example: "买了一套新家具。", examplePinyin: "Mǎi le yī tào xīn jiājù.", exampleTranslation: "Bought a set of new furniture." },
+            { hanzi: "坚持", pinyin: "jiānchí", meaning: "memegang teguh", example: "坚持就是胜利。", examplePinyin: "Jiānchí jiùshì shènglì.", exampleTranslation: "Persistence leads to victory." },
+            { hanzi: "将来", pinyin: "jiānglái", meaning: "masa depan", example: "祝你将来事业顺利。", examplePinyin: "Zhù nǐ jiānglái shìyè shùnlì.", exampleTranslation: "Wish you smooth career in the future." },
+            { hanzi: "奖金", pinyin: "jiǎngjīn", meaning: "hadiah/bonus", example: "公司发了年终奖金。", examplePinyin: "Gōngsī fā le niánzhōng jiǎngjīn.", exampleTranslation: "The company paid out year-end bonus." },
+            { hanzi: "降低", pinyin: "jiàngdī", meaning: "menurunkan", example: "降低生产成本。", examplePinyin: "Jiàngdī shēngchǎn chéngběn.", exampleTranslation: "Reduce production costs." },
+            { hanzi: "交流", pinyin: "jiāoliú", meaning: "berkomunikasi", example: "多和同学交流。", examplePinyin: "Duō hé tóngxué jiāoliú.", exampleTranslation: "Communicate more with classmates." },
+            { hanzi: "郊区", pinyin: "jiāoqū", meaning: "pinggiran kota", example: "郊区的空气很清新。", examplePinyin: "Jiāoqū de kōngqì hěn qīngxīn.", exampleTranslation: "The air in the suburbs is fresh." },
+            { hanzi: "骄傲", pinyin: "jiāoào", meaning: "sombong", example: "取得成绩也不能骄傲。", examplePinyin: "Qǔdé chéngjì yě bùnéng jiāoào.", exampleTranslation: "Don't be proud even if you achieve success." },
+            { hanzi: "教授", pinyin: "jiàoshòu", meaning: "profesor", example: "大学教授正在授课。", examplePinyin: "Dàxué jiàoshòu zhèngzài shòukè.", exampleTranslation: "The university professor is lecturing." },
+            { hanzi: "接受", pinyin: "jiēshòu", meaning: "menerima", example: "虚心接受意见。", examplePinyin: "Xūxīn jiēshòu yìjiàn.", exampleTranslation: "Accept feedback humbly." },
+            { hanzi: "接着", pinyin: "jiēzhe", meaning: "selanjutnya", example: "看完戏接着吃饭。", examplePinyin: "Kàn wán xì jiēzhe chīfàn.", exampleTranslation: "Have dinner next after watching show." },
+            { hanzi: "节约", pinyin: "jiéyuē", meaning: "menghemat", example: "养成节约用水的好习惯。", examplePinyin: "Yǎngchéng jiéyuē yòngshuǐ de hǎo xíguàn.", exampleTranslation: "Develop good habit of saving water." },
+            { hanzi: "结果", pinyin: "jiéguǒ", meaning: "hasil", example: "考试结果出来了。", examplePinyin: "Kǎoshì jiéguǒ chūlái le.", exampleTranslation: "Exam results are out." },
+            { hanzi: "解释", pinyin: "jiěshì", meaning: "menjelaskan", example: "请向我解释一下原因。", examplePinyin: "Qǐng xiàng wǒ jiěshì yīxià yuányīn.", exampleTranslation: "Please explain the reason to me." },
+            { hanzi: "尽管", pinyin: "jǐnguǎn", meaning: "walaupun", example: "尽管很累但他坚持工作。", examplePinyin: "Jǐnguǎn hěn lèi dàn tā jiānchí gōngzuò.", exampleTranslation: "Although tired, he keeps working." },
+            { hanzi: "紧张", pinyin: "jǐnzhāng", meaning: "tegang", example: "第一次上台我很紧张。", examplePinyin: "Dì yī cì shàngtái wǒ hěn jǐnzhāng.", exampleTranslation: "I was nervous on stage for first time." },
+            { hanzi: "进行", pinyin: "jìnxíng", meaning: "melaksanakan", example: "会议正在顺利进行。", examplePinyin: "Huìyì zhèngzài shùnlì jìnxíng.", exampleTranslation: "The meeting is going smoothly." },
+            { hanzi: "京剧", pinyin: "jīngjù", meaning: "opera peking", example: "京剧是传统文化。", examplePinyin: "Jīngjù shì chuántǒng wénhuà.", exampleTranslation: "Peking Opera is traditional culture." },
+            { hanzi: "经济", pinyin: "jīngjì", meaning: "ekonomi", example: "国家经济快速增长。", examplePinyin: "Guójiā jīngjì kuàisù zēngzhǎng.", exampleTranslation: "The country's economy grows rapidly." },
+            { hanzi: "经历", pinyin: "jīnglì", meaning: "pengalaman", example: "这是一段难忘的经历。", examplePinyin: "Zhè shì yī duàn nánwàng de jīnglì.", exampleTranslation: "This is an unforgettable experience." },
+            { hanzi: "经验", pinyin: "jīngyàn", meaning: "pengalaman", example: "他拥有丰富的工作经验。", examplePinyin: "Tā yǒngyǒu fēngfù de gōngzuò jīngyàn.", exampleTranslation: "He has rich working experience." },
+            { hanzi: "景色", pinyin: "jǐngsè", meaning: "pemandangan", example: "山上的景色非常迷人。", examplePinyin: "Shān shang de jǐngsè fēicháng mírén.", exampleTranslation: "Scenery on mountain is charming." },
+            { hanzi: "风景", pinyin: "fēngjǐng", meaning: "pemandangan", example: "沿途风景非常美。", examplePinyin: "Yántú fēngjǐng fēicháng měi.", exampleTranslation: "The scenery along the way is beautiful." },
+            { hanzi: "竞争", pinyin: "jìngzhēng", meaning: "bersaing", example: "市场竞争很激烈。", examplePinyin: "Shìchǎng jìngzhēng hěn jīliè.", exampleTranslation: "Market competition is intense." },
+            { hanzi: "鉴定", pinyin: "jiàndìng", meaning: "otentikasi", example: "请专家鉴定这幅画。", examplePinyin: "Qǐng zhuānjiā jiàndìng zhè fú huà.", exampleTranslation: "Ask experts to authenticate painting." },
+            { hanzi: "居然", pinyin: "jūrán", meaning: "tak terduga", example: "没想到他居然赢了。", examplePinyin: "Méi xiǎngdào tā jūrán yíng le.", exampleTranslation: "Unexpectedly he won." },
+            { hanzi: "镜子", pinyin: "jìngzi", meaning: "cermin", example: "对着镜子整理衣服。", examplePinyin: "Duì zhe jìngzi zhěnglǐ yīfu.", exampleTranslation: "Adjust clothes in front of mirror." },
+            { hanzi: "究竟", pinyin: "jiūjìng", meaning: "sesungguhnya", example: "你究竟发生了什么事？", examplePinyin: "Nǐ jiūjìng fāshēng le shénme shì?", exampleTranslation: "What actually happened to you?" },
+            { hanzi: "举", pinyin: "jǔ", meaning: "mengangkat", example: "请举手回答问题。", examplePinyin: "Qǐng jǔshǒu huídá wèntí.", exampleTranslation: "Please raise hand to answer questions." },
+            { hanzi: "举办", pinyin: "jǔbàn", meaning: "mengadakan", example: "学校举办运动会。", examplePinyin: "Xuéxiào jǔbàn yùndònghuì.", exampleTranslation: "School holds sports games." },
+            { hanzi: "拒绝", pinyin: "jùjué", meaning: "menolak", example: "礼貌地拒绝邀请。", examplePinyin: "Lǐmào de jùjué yāoqǐng.", exampleTranslation: "Refuse invitation politely." },
+            { hanzi: "距离", pinyin: "jùlí", meaning: "jarak", example: "两地距离很远。", examplePinyin: "Liǎng dì jùlí hěn yuǎn.", exampleTranslation: "Distance between two places is far." },
+            { hanzi: "聚会", pinyin: "jùhuì", meaning: "pertemuan", example: "今晚参加朋友聚会。", examplePinyin: "Jīnwǎn cānjiā péngyou jùhuì.", exampleTranslation: "Attend friends' gathering tonight." },
+            { hanzi: "科学", pinyin: "kēxué", meaning: "ilmu pengetahuan", example: "我们要相信科学。", examplePinyin: "Wǒmen yào xiāngxìn kēxué.", exampleTranslation: "We must believe in science." },
+            { hanzi: "棵", pinyin: "kē", meaning: "pohon (satuan)", example: "院子里种了一棵树。", examplePinyin: "Yuànzi lǐ zhòng le yī kē shù.", exampleTranslation: "A tree is planted in the yard." },
+            { hanzi: "可怜", pinyin: "kělián", meaning: "kasihan", example: "这只小狗看起来很可怜。", examplePinyin: "Zhè zhī xiǎogǒu kàn qǐlái hěn kělián.", exampleTranslation: "This little dog looks pitiful." },
+            { hanzi: "可惜", pinyin: "kěxī", meaning: "sayang sekali", example: "没能看到演出真可惜。", examplePinyin: "Méi néng kàndào yǎnchū zhēn kěxī.", exampleTranslation: "Pity not being able to see the performance." },
+            { hanzi: "肯定", pinyin: "kěndìng", meaning: "pasti", example: "他肯定会按时来。", examplePinyin: "Tā kěndìng huì ànshí lái.", exampleTranslation: "He will definitely come on time." },
+            { hanzi: "一定", pinyin: "yīdìng", meaning: "pasti", example: "我一定努力学习。", examplePinyin: "Wǒ yīdìng nǔlì xuéxí.", exampleTranslation: "I will certainly study hard." },
+            { hanzi: "恐怕", pinyin: "kǒngpà", meaning: "mungkin/takut", example: "恐怕今天会下雨。", examplePinyin: "Kǒngpà jīntiān huì xiàyǔ.", exampleTranslation: "I'm afraid it will rain today." },
+            { hanzi: "矿泉水", pinyin: "kuàngquánshuǐ", meaning: "air mineral", example: "请给我一瓶矿泉水。", examplePinyin: "Qǐng gěi wǒ yī píng kuàngquánshuǐ.", exampleTranslation: "Please give me a bottle of mineral water." },
+            { hanzi: "来不及", pinyin: "láibují", meaning: "tak sempat", example: "快点，要来不及了！", examplePinyin: "Kuài diǎn, yào láibují le!", exampleTranslation: "Hurry up, there won't be enough time!" },
+            { hanzi: "来得及", pinyin: "láidejí", meaning: "masih sempat", example: "还有时间，还来得及。", examplePinyin: "Hái yǒu shíjiān, hái láidejí.", exampleTranslation: "There is still time, we can make it." },
+            { hanzi: "懒", pinyin: "lǎn", meaning: "males", example: "不要养成懒惰的习惯。", examplePinyin: "Bùyào yǎngchéng lǎnduò de xíguàn.", exampleTranslation: "Don't form a lazy habit." },
+            { hanzi: "冷静", pinyin: "lěngjìng", meaning: "tenang", example: "遇到危险要保持冷静。", examplePinyin: "Yùdào wēixiǎn yào bǎochí lěngjìng.", exampleTranslation: "Keep calm when facing danger." },
+            { hanzi: "离婚", pinyin: "líhūn", meaning: "cerai", example: "他们协议离婚了。", examplePinyin: "Tāmen xiéyì líhūn le.", exampleTranslation: "They divorced by agreement." },
+            { hanzi: "理发", pinyin: "lǐfǎ", meaning: "potong rambut", example: "我下午去理发店理发。", examplePinyin: "Wǒ xiàwǔ qù lǐfàdiàn lǐfǎ.", exampleTranslation: "I go to barbershop for haircut this afternoon." },
+            { hanzi: "理想", pinyin: "lǐxiǎng", meaning: "ideal", example: "实现自己的理想。", examplePinyin: "Shíxiàn zìjǐ de lǐxiǎng.", exampleTranslation: "Realize your own ideals." },
+            { hanzi: "联系", pinyin: "liánxì", meaning: "berkomunikasi", example: "保持电话联系。", examplePinyin: "Bǎochí diànhuà liánxì.", exampleTranslation: "Keep in touch by phone." },
+            { hanzi: "凉快", pinyin: "liángkuai", meaning: "sejuk", example: "下雨后天气很凉快。", examplePinyin: "Xiàyǔ hòu tiānqì hěn liángkuai.", exampleTranslation: "The weather is cool after rain." },
+            { hanzi: "流利", pinyin: "liúlì", meaning: "lancar", example: "他能说一口流利的中文。", examplePinyin: "Tā néng shuō yī kǒu liúlì de Zhōngwén.", exampleTranslation: "He speaks fluent Chinese." },
+            { hanzi: "流", pinyin: "liú", meaning: "mengalir", example: "河水缓缓地流过。", examplePinyin: "Héshuǐ huǎnhuǎn de liú guò.", exampleTranslation: "River water flows slowly." },
+            { hanzi: "流行", pinyin: "liúxíng", meaning: "populer", example: "这种衣服现在很流行。", examplePinyin: "Zhè zhǒng yīfu xiànzài hěn liúxíng.", exampleTranslation: "This style of clothing is popular now." },
+            { hanzi: "乱", pinyin: "luàn", meaning: "kacau", example: "房间里有点乱。", examplePinyin: "Fángjiān lǐ yǒudiǎn luàn.", exampleTranslation: "The room is a bit messy." },
+            { hanzi: "麻烦", pinyin: "máfan", meaning: "repot", example: "麻烦你帮我拿一下包。", examplePinyin: "Máfan nǐ bāng wǒ ná yīxià bāo.", exampleTranslation: "Trouble you to hold my bag." },
+            { hanzi: "满", pinyin: "mǎn", meaning: "penuh", example: "公车上挤满了人。", examplePinyin: "Gōngchē shang jǐ mǎn le rén.", exampleTranslation: "The bus is full of people." },
+            { hanzi: "毛巾", pinyin: "máojīn", meaning: "handuk", example: "用毛巾擦干手。", examplePinyin: "Yòng máojīn cā gān shǒu.", exampleTranslation: "Dry hands with a towel." },
+            { hanzi: "美丽", pinyin: "měilì", meaning: "indah", example: "花园里风景很美丽。", examplePinyin: "Huāyuán lǐ fēngjǐng hěn měilì.", exampleTranslation: "Scenery in garden is beautiful." },
+            { hanzi: "梦", pinyin: "mèng", meaning: "mimpi", example: "昨晚做了一个奇妙的梦。", examplePinyin: "Zuówǎn zuò le yī gè qímiào de mèng.", exampleTranslation: "Had a wonderful dream last night." },
+            { hanzi: "迷路", pinyin: "mílù", meaning: "tersesat", example: "在森林里容易迷路。", examplePinyin: "Zài sēnlín lǐ róngyì mílù.", exampleTranslation: "Easy to get lost in forest." },
+            { hanzi: "密码", pinyin: "mìmǎ", meaning: "password", example: "请输入信用卡密码。", examplePinyin: "Qǐng shūrù xìnyòngkǎ mìmǎ.", exampleTranslation: "Please enter credit card password." },
+            { hanzi: "民族", pinyin: "mínzú", meaning: "bangsa", example: "中华民族历史悠久。", examplePinyin: "Zhōnghuá mínzú lìshǐ yōujiǔ.", exampleTranslation: "The Chinese nation has a long history." },
+            { hanzi: "目的", pinyin: "mùdì", meaning: "tujuan", example: "明确学习的目的。", examplePinyin: "Míngquè xuéxí de mùdì.", exampleTranslation: "Clarify the purpose of learning." },
+            { hanzi: "拿", pinyin: "ná", meaning: "mengambil", example: "帮我拿一下钥匙。", examplePinyin: "Bāng wǒ ná yīxià yàoshi.", exampleTranslation: "Help me take the key." },
+            { hanzi: "难", pinyin: "nán", meaning: "susah", example: "这道题目有点难。", examplePinyin: "Zhè dào tímù yǒudiǎn nán.", exampleTranslation: "This question is a bit difficult." },
+            { hanzi: "难道", pinyin: "nándào", meaning: "apakah", example: "难道你不知道这件事？", examplePinyin: "Nándào nǐ bù zhīdào zhè jiàn shì?", exampleTranslation: "Don't you know about this?" },
+            { hanzi: "鸟", pinyin: "niǎo", meaning: "burung", example: "小鸟在树上歌唱。", examplePinyin: "Xiǎoniǎo zài shù shang gēchàng.", exampleTranslation: "Little birds sing in the trees." },
+            { hanzi: "努力", pinyin: "nǔlì", meaning: "berusaha", example: "努力工作才有回报。", examplePinyin: "Nǔlì gōngzuò cái yǒu huíbào.", exampleTranslation: "Hard work yields rewards." },
+            { hanzi: "爬山", pinyin: "páshān", meaning: "mendaki gunung", example: "周末我们去爬山。", examplePinyin: "Zhōumò wǒmen qù páshān.", exampleTranslation: "We go mountain climbing on weekend." },
+            { hanzi: "盘子", pinyin: "pánzi", meaning: "piring", example: "盘子里装满了水果。", examplePinyin: "Pánzi lǐ zhuāng mǎn le shuǐguǒ.", exampleTranslation: "The plate is filled with fruit." },
+            { hanzi: "啤酒", pinyin: "píjiǔ", meaning: "bir", example: "夏天喝冰啤酒很舒服。", examplePinyin: "Xiàtiān hē bīng píjiǔ hěn shūfu.", exampleTranslation: "Drinking cold beer in summer is pleasant." },
+            { hanzi: "其他", pinyin: "qítā", meaning: "lainnya", example: "还有什么其他问题吗？", examplePinyin: "Hái yǒu shénme qítā wèntí ma?", exampleTranslation: "Are there any other questions?" },
+            { hanzi: "其中", pinyin: "qízhōng", meaning: "di antaranya", example: "其中有三个人是留学生。", examplePinyin: "Qízhōng yǒu sān gè rén shì liúxuéshēng.", exampleTranslation: "Among them, three are international students." },
+            { hanzi: "情况", pinyin: "qíngkuàng", meaning: "keadaan", example: "了解详细情况。", examplePinyin: "Liǎojiě xiángxì qíngkuàng.", exampleTranslation: "Understand detailed situation." },
+            { hanzi: "请假", pinyin: "qǐngjià", meaning: "izin", example: "生病了需要向老师请假。", examplePinyin: "Shēngbìng le xūyào xiàng lǎoshī qǐngjià.", exampleTranslation: "Ask teacher for leave when sick." },
+            { hanzi: "请客", pinyin: "qǐngkè", meaning: "traktir", example: "今天发工资，我请客！", examplePinyin: "Jīntiān fā gōngzī, wǒ qǐngkè!", exampleTranslation: "Got paid today, my treat!" },
+            { hanzi: "穷", pinyin: "qióng", meaning: "miskin", example: "虽然穷但活得很开心。", examplePinyin: "Suīrán qióng dàn huó de hěn kāixīn.", exampleTranslation: "Although poor, lives happily." },
+            { hanzi: "区别", pinyin: "qūbié", meaning: "perbedaan", example: "区分这两个词的区别。", examplePinyin: "Qūfēn zhè liǎng gè cí de qūbié.", exampleTranslation: "Distinguish difference between these two words." },
+            { hanzi: "取", pinyin: "qǔ", meaning: "mengambil", example: "去邮局取包裹。", examplePinyin: "Qù yóujú qǔ bāoguǒ.", exampleTranslation: "Go to post office to pick up parcel." },
+            { hanzi: "全", pinyin: "quán", meaning: "seluruh", example: "全家人一起去旅游。", examplePinyin: "Quán jiārén yīqǐ qù lǚyóu.", exampleTranslation: "Whole family goes traveling together." },
+            { hanzi: "然后", pinyin: "ránhòu", meaning: "kemudian", example: "先洗手，然后吃饭。", examplePinyin: "Xiān xǐshǒu, ránhòu chīfàn.", exampleTranslation: "Wash hands first, then eat." },
+            { hanzi: "热情", pinyin: "rèqíng", meaning: "ramah", example: "她对客人非常热情。", examplePinyin: "Tā duì kèrén fēicháng rèqíng.", exampleTranslation: "She is very warm to guests." },
+            { hanzi: "认为", pinyin: "rènwéi", meaning: "berpendapat", example: "我认为这个方法很好。", examplePinyin: "Wǒ rènwéi zhè gè fāngfǎ hěn hǎo.", exampleTranslation: "I think this method is very good." },
+            { hanzi: "认真", pinyin: "rènzhēn", meaning: "serius", example: "认真听讲才能学好。", examplePinyin: "Rènzhēn tīngjiǎng cái néng xuéhǎo.", exampleTranslation: "Listen attentively to learn well." },
+            { hanzi: "容易", pinyin: "róngyì", meaning: "gampang", example: "汉语拼音并不难，很容易学。", examplePinyin: "Hànyǔ pīnyīn bìng bù nán, hěn róngyì xué.", exampleTranslation: "Pinyin is not hard, easy to learn." },
+            { hanzi: "如果", pinyin: "rúguǒ", meaning: "jika", example: "如果下雨，我们就在家看书。", examplePinyin: "Rúguǒ xiàyǔ, wǒmen jiù zài jiā kànshū.", exampleTranslation: "If it rains, we read at home." },
+            { hanzi: "伞", pinyin: "sǎn", meaning: "payung", example: "出门记得带一把伞。", examplePinyin: "Chūmén jìde dài yī bǎ sǎn.", exampleTranslation: "Remember to bring an umbrella." },
+            { hanzi: "上网", pinyin: "shàngwǎng", meaning: "internet", example: "我每天上网查资料。", examplePinyin: "Wǒ měitiān shàngwǎng chá zīliào.", exampleTranslation: "I surf the internet daily for information." },
+            { hanzi: "稍微", pinyin: "shāowēi", meaning: "sedikit", example: "请稍微等一下。", examplePinyin: "Qǐng shāowēi děng yīxià.", exampleTranslation: "Please wait a moment." },
+            { hanzi: "社会", pinyin: "shèhuì", meaning: "masyarakat", example: "大学毕业后进入社会。", examplePinyin: "Dàxué bìyè hòu jìnrù shèhuì.", exampleTranslation: "Enter society after graduating university." },
+            { hanzi: "深", pinyin: "shēn", meaning: "dalam", example: "这条河水很深。", examplePinyin: "Zhè tiáo héshuǐ hěn shēn.", exampleTranslation: "The river water is very deep." },
+            { hanzi: "申请", pinyin: "shēnqǐng", meaning: "mengajukan", example: "申请奖学金。", examplePinyin: "Shēnqǐng jiǎngxuéjīn.", exampleTranslation: "Apply for a scholarship." },
+            { hanzi: "生活", pinyin: "shēnghuó", meaning: "kehidupan", example: "在这里生活很舒适。", examplePinyin: "Zài zhèlǐ shēnghuó hěn shūshì.", exampleTranslation: "Living here is very comfortable." },
+            { hanzi: "生意", pinyin: "shēngyi", meaning: "bisnis", example: "祝你生意兴隆。", examplePinyin: "Zhù nǐ shēngyi xīnglóng.", exampleTranslation: "Wish your business prospers." },
+            { hanzi: "省", pinyin: "shěng", meaning: "provinsi", example: "云南省风景秀丽。", examplePinyin: "Yúnnán Shěng fēngjǐng xiùlì.", exampleTranslation: "Yunnan Province has beautiful scenery." },
+            { hanzi: "剩", pinyin: "shèng", meaning: "sisa", example: "盘子里还剩一个苹果。", examplePinyin: "Pánzi lǐ hái shèng yī gè píngguǒ.", exampleTranslation: "There is one apple left on the plate." },
+            { hanzi: "失败", pinyin: "shībài", meaning: "gagal", example: "失败是成功之母。", examplePinyin: "Shībài shì chénggōng zhī mǔ.", exampleTranslation: "Failure is the mother of success." },
+            { hanzi: "师傅", pinyin: "shīfu", meaning: "guru/master", example: "师傅，请去北京饭店。", examplePinyin: "Shīfu, qǐng qù Běijīng Fàndiàn.", exampleTranslation: "Driver, please go to Beijing Hotel." },
+            { hanzi: "十分", pinyin: "shífēn", meaning: "sangat", example: "我对结果十分满意。", examplePinyin: "Wǒ duì jiéguǒ shífēn mǎnyì.", exampleTranslation: "I am extremely satisfied with results." },
+            { hanzi: "实际", pinyin: "shíjì", meaning: "aktual", example: "结合实际情况解决问题。", examplePinyin: "Jiéhé shíjì qíngkuàng jiějué wèn tí.", exampleTranslation: "Solve problems combined with actual conditions." },
+            { hanzi: "时候", pinyin: "shíhòu", meaning: "waktu", example: "你有时间的时候联系我。", examplePinyin: "Nǐ yǒu shíjiān de shíhou liánxì wǒ.", exampleTranslation: "Contact me when you have time." },
+            { hanzi: "时间", pinyin: "shíjiān", meaning: "waktu", example: "时间过得真快。", examplePinyin: "Shíjiān guò de zhēn kuài.", exampleTranslation: "Time flies so fast." },
+            { hanzi: "实在", pinyin: "shízài", meaning: "sebenarnya", example: "这件衣服实在太贵了。", examplePinyin: "Zhè jiàn yīfu shízài tài guì le.", exampleTranslation: "This dress is really too expensive." },
+            { hanzi: "使用", pinyin: "shǐyòng", meaning: "menggunakan", example: "学会使用新软件。", examplePinyin: "Xuéhuì shǐyòng xīn ruǎnjiàn.", exampleTranslation: "Learn to use new software." },
+            { hanzi: "世纪", pinyin: "shìjì", meaning: "abad", example: "21世纪是信息时代。", examplePinyin: "Èrshíyī shìjì shì xìnxī shídài.", exampleTranslation: "The 21st century is the information age." },
+            { hanzi: "适应", pinyin: "shìyìng", meaning: "beradaptasi", example: "很快适应新环境。", examplePinyin: "Hěn kuài shìyìng xīn huánjìng.", exampleTranslation: "Quickly adapt to new environment." },
+            { hanzi: "事情", pinyin: "shìqing", meaning: "urusan", example: "今天有很多事情要做。", examplePinyin: "Jīntiān yǒu hěn duō shìqing yào zuò.", exampleTranslation: "There are many things to do today." },
+            { hanzi: "收", pinyin: "shōu", meaning: "menerima", example: "我收到了你的礼物。", examplePinyin: "Wǒ shōudào le nǐ de lǐwù.", exampleTranslation: "I received your gift." },
+            { hanzi: "收到", pinyin: "shōudào", meaning: "menerima", example: "收到请回复。", examplePinyin: "Shōudào qǐng huífù.", exampleTranslation: "Please reply upon receipt." },
+            { hanzi: "收入", pinyin: "shōurù", meaning: "pendapatan", example: "他的月收入很高。", examplePinyin: "Tā de yuè shōurù hěn gāo.", exampleTranslation: "His monthly income is high." },
+            { hanzi: "手", pinyin: "shǒu", meaning: "tangan", example: "饭前要洗手。", examplePinyin: "Fàn qián yào xǐshǒu.", exampleTranslation: "Wash hands before meals." },
+            { hanzi: "手机", pinyin: "shǒujī", meaning: "hp", example: "看手机时间长了眼睛累。", examplePinyin: "Kàn shǒujī shíjiān cháng le yǎnjing lèi.", exampleTranslation: "Eyes get tired after looking at phones long." },
+            { hanzi: "受到", pinyin: "shòudào", meaning: "mendapatkan", example: "受到了大家的热烈欢迎。", examplePinyin: "Shòudào le dàjiā de rèliè huānyíng.", exampleTranslation: "Received warm welcome from everyone." },
+            { hanzi: "数学", pinyin: "shùxué", meaning: "matematika", example: "她的数学成绩优秀。", examplePinyin: "Tā de shùxué chéngjì yōuxiù.", exampleTranslation: "Her math grades are excellent." },
+            { hanzi: "双", pinyin: "shuāng", meaning: "sepasang", example: "买了一双鞋。", examplePinyin: "Mǎi le yī shuāng xié.", exampleTranslation: "Bought a pair of shoes." },
+            { hanzi: "水平", pinyin: "shuǐpíng", meaning: "level", example: "提高汉语水平。", examplePinyin: "Tígāo Hànyǔ shuǐpíng.", exampleTranslation: "Improve Chinese language level." },
+            { hanzi: "太阳", pinyin: "tàiyáng", meaning: "matahari", example: "太阳从东边升起。", examplePinyin: "Tàiyáng cóng dōngbian shēngqǐ.", exampleTranslation: "The sun rises from the east." },
+            { hanzi: "态度", pinyin: "tàidù", meaning: "sikap", example: "工作态度很端正。", examplePinyin: "Gōngzuò tàidù hěn duānzhèng.", exampleTranslation: "Work attitude is very upright." },
+            { hanzi: "谈", pinyin: "tán", meaning: "berbicara", example: "我们找时间好好谈谈。", examplePinyin: "Wǒmen zhǎo shíjiān hǎohǎo tán tán.", exampleTranslation: "Let's find time to have a good talk." },
+            { hanzi: "弹钢琴", pinyin: "tán gāngqín", meaning: "main piano", example: "她从小学习弹钢琴。", examplePinyin: "Tā cóngxǐao xuéxí tán gāngqín.", exampleTranslation: "She learned to play piano since childhood." },
+            { hanzi: "汤", pinyin: "tāng", meaning: "sup", example: "这碗鸡汤很鲜美。", examplePinyin: "Zhè wǎn jītāng hěn xiānměi.", exampleTranslation: "This bowl of chicken soup is delicious." },
+            { hanzi: "条件", pinyin: "tiáojiàn", meaning: "syarat", example: "创造良好的生活条件。", examplePinyin: "Chuàngzào liánghǎo de shēnghuó tiáojiàn.", exampleTranslation: "Create good living conditions." },
+            { hanzi: "提高", pinyin: "tígāo", meaning: "meningkatkan", example: "努力提高专业技能。", examplePinyin: "Nǔlì tígāo zhuānyè jìnéng.", exampleTranslation: "Strive to improve professional skills." },
+            { hanzi: "提供", pinyin: "tígōng", meaning: "menyediakan", example: "酒店提供免费早餐。", examplePinyin: "Jiǔdiàn tígōng miǎnfèi zǎocān.", exampleTranslation: "Hotel provides free breakfast." },
+            { hanzi: "提前", pinyin: "tíqián", meaning: "lebih dulu", example: "请提前半小时到达。", examplePinyin: "Qǐng tíqián bàn xiǎoshí dàodá.", exampleTranslation: "Please arrive half an hour early." },
+            { hanzi: "提醒", pinyin: "tíxǐng", meaning: "mengingatkan", example: "提醒我明天开会。", examplePinyin: "Tíxǐng wǒ míngtiān kāihuì.", exampleTranslation: "Remind me to attend the meeting tomorrow." },
+            { hanzi: "填空", pinyin: "tiánkòng", meaning: "mengisi titik2", example: "请做选词填空练习。", examplePinyin: "Qǐng zuò xuǎn cí tiánkòng liànxí.", exampleTranslation: "Please do fill-in-the-blank exercise." },
+            { hanzi: "条", pinyin: "tiáo", meaning: "helai/batang", example: "这条新闻很吸引人。", examplePinyin: "Zhè tiáo xīnwén hěn xīyǐn rén.", exampleTranslation: "This piece of news is attractive." },
+            { hanzi: "同事", pinyin: "tóngshì", meaning: "rekan kerja", example: "和同事友好相处。", examplePinyin: "Hé tóngshì yǒu hǎo xiāngchǔ.", exampleTranslation: "Get along well with colleagues." },
+            { hanzi: "同意", pinyin: "tóngyì", meaning: "setuju", example: "我完全同意你的意见。", examplePinyin: "Wǒ wánquán tóngyì nǐ de yìjiàn.", exampleTranslation: "I completely agree with your opinion." },
+            { hanzi: "突然", pinyin: "tūrán", meaning: "tiba-tiba", example: "天气突然下起了大雨。", examplePinyin: "Tiānqì tūrán xià qǐ le dàyǔ.", exampleTranslation: "It suddenly rained heavily." },
+            { hanzi: "图书馆", pinyin: "túshūguǎn", meaning: "perpustakaan", example: "在图书馆借书。", examplePinyin: "Zài túshūguǎn jiè shū.", exampleTranslation: "Borrow books in the library." },
+            { hanzi: "推", pinyin: "tuī", meaning: "dorong", example: "请把门推开。", examplePinyin: "Qǐng bǎ mén tuī kāi.", exampleTranslation: "Please push the door open." },
+            { hanzi: "完成", pinyin: "wánchéng", meaning: "menyelesaikan", example: "按时完成各项任务。", examplePinyin: "Ànshí wánchéng gè xiàng rènwu.", exampleTranslation: "Complete tasks on time." },
+            { hanzi: "碗", pinyin: "wǎn", meaning: "mangkuk", example: "我吃了一碗面条。", examplePinyin: "Wǒ chī le yī wǎn miàntiáo.", exampleTranslation: "I ate a bowl of noodles." },
+            { hanzi: "万", pinyin: "wàn", meaning: "puluh ribu", example: "一万块钱。", examplePinyin: "Yī wàn kuài qián.", exampleTranslation: "Ten thousand yuan." },
+            { hanzi: "忘记", pinyin: "wàngjì", meaning: "lupa", example: "别忘记带护照。", examplePinyin: "Bié wàngjì dài hùzhào.", exampleTranslation: "Don't forget to bring passport." },
+            { hanzi: "为", pinyin: "wèi", meaning: "demi/untuk", example: "大家都在为梦想奋斗。", examplePinyin: "Dàjiā dōu zài wèi mèngxiǎng fèndòu.", exampleTranslation: "Everyone is striving for dreams." },
+            { hanzi: "为了", pinyin: "wèile", meaning: "demi", example: "为了健康坚持运动。", examplePinyin: "Wèile jiànkāng jiānchí yùndòng.", exampleTranslation: "Exercise persistently for health." },
+            { hanzi: "位", pinyin: "wèi", meaning: "orang", example: "请问有几位客人？", examplePinyin: "Qǐngwèn yǒu jǐ wèi kèrén?", exampleTranslation: "How many guests, please?" },
+            { hanzi: "文化", pinyin: "wénhuà", meaning: "budaya", example: "中国文化源远流长。", examplePinyin: "Zhōngguó wénhuà yuányuǎnliúcháng.", exampleTranslation: "Chinese culture has a long history." },
+            { hanzi: "问", pinyin: "wèn", meaning: "tanya", example: "不懂就问。", examplePinyin: "Bù dǒng jiù wèn.", exampleTranslation: "Ask if you don't understand." },
+            { hanzi: "问题", pinyin: "wèntí", meaning: "pertanyaan", example: "回答老师的问题。", examplePinyin: "Huídá lǎoshī de wèntí.", exampleTranslation: "Answer teacher's questions." },
+            { hanzi: "握手", pinyin: "wòshǒu", meaning: "jabat tangan", example: "见面时友好握手。", examplePinyin: "Jiànmiàn shí yǒu hǎo wòshǒu.", exampleTranslation: "Shake hands warmly when meeting." },
+            { hanzi: "西红柿", pinyin: "xīhóngshì", meaning: "tomat", example: "西红柿炒鸡蛋非常好吃。", examplePinyin: "Xīhóngshì chǎo jīdàn fēicháng hǎochī.", exampleTranslation: "Scrambled eggs with tomatoes is delicious." },
+            { hanzi: "习惯", pinyin: "xíguàn", meaning: "kebiasaan", example: "我习惯早起早睡。", examplePinyin: "Wǒ xíguàn zǎoqǐ zǎoshuì.", exampleTranslation: "I'm used to going to bed and waking up early." },
+            { hanzi: "洗手间", pinyin: "xǐshǒujiān", meaning: "toilet", example: "请问洗手间在哪里？", examplePinyin: "Qǐngwèn xǐshǒujiān zài nǎlǐ?", exampleTranslation: "Where is the restroom, please?" },
+            { hanzi: "洗澡", pinyin: "xǐzǎo", meaning: "mandi", example: "睡觉前洗个热水澡。", examplePinyin: "Shuìjiào qián xǐ gè rèshuǐzǎo.", exampleTranslation: "Take a hot shower before sleeping." },
+            { hanzi: "现代", pinyin: "xiàndài", meaning: "modern", example: "现代科技给生活带来便利。", examplePinyin: "Xiàndài kējì gěi shēnghuó dàilái biànlì.", exampleTranslation: "Modern technology brings convenience to life." },
+            { hanzi: "香蕉", pinyin: "xiāngjiāo", meaning: "pisang", example: "猴子喜欢吃香蕉。", examplePinyin: "Hóuzi xǐhuan chī xiāngjiāo.", exampleTranslation: "Monkeys like to eat bananas." },
+            { hanzi: "相同", pinyin: "xiāngtóng", meaning: "sama", example: "他们俩有相同的爱好。", examplePinyin: "Tāmen liǎ yǒu xiāngtóng de àihào.", exampleTranslation: "The two of them share the same hobbies." },
+            { hanzi: "相信", pinyin: "xiāngxìn", meaning: "percaya", example: "相信自己一定能行。", examplePinyin: "Xiāngxìn zìjǐ yīdìng néng xíng.", exampleTranslation: "Believe in yourself that you can do it." },
+            { hanzi: "像", pinyin: "xiàng", meaning: "seperti", example: "他长得很像他的父亲。", examplePinyin: "Tā zhǎng de hěn xiàng tā de fùqīn.", exampleTranslation: "He looks very much like his father." },
+            { hanzi: "校长", pinyin: "xiàozhǎng", meaning: "kepala sekolah", example: "校长在大会上讲话。", examplePinyin: "Xiàozhǎng zài dàhuì shang jiǎnghuà.", exampleTranslation: "The principal spoke at the conference." },
+            { hanzi: "鞋", pinyin: "xié", meaning: "sepatu", example: "穿上一双舒适的运动鞋。", examplePinyin: "Chuān shàng yī shuāng shūshì de yùndòngxié.", exampleTranslation: "Put on a pair of comfortable sports shoes." },
+            { hanzi: "信", pinyin: "xìn", meaning: "surat", example: "给远方的朋友写信。", examplePinyin: "Gěi yuǎnfāng de péngyou xiě xìn.", exampleTranslation: "Write a letter to a friend far away." },
+            { hanzi: "信用卡", pinyin: "xìnyòngkǎ", meaning: "kartu kredit", example: "刷信用卡付款。", examplePinyin: "Shuā xìnyòngkǎ fùkuǎn.", exampleTranslation: "Pay by credit card." },
+            { hanzi: "行李箱", pinyin: "xínglǐxiāng", meaning: "koper", example: "收拾好行李箱准备出发。", examplePinyin: "Shōushi hǎo xínglǐxiāng zhǔnbèi chūfā.", exampleTranslation: "Pack luggage and get ready to depart." },
+            { hanzi: "熊猫", pinyin: "xióngmāo", meaning: "panda", example: "大熊猫是中国的国宝。", examplePinyin: "Dàxióngmāo shì Zhōngguó de guóbǎo.", exampleTranslation: "Giant pandas are China's national treasure." },
+            { hanzi: "需要", pinyin: "xūyào", meaning: "butuh", example: "遇到困难需要相互帮助。", examplePinyin: "Yùdào kùnnán xūyào xiānghù bāngzhù.", exampleTranslation: "Need to help each other when encountering difficulties." },
+            { hanzi: "选择", pinyin: "xuǎnzé", meaning: "pilih", example: "做出正确的选择。", examplePinyin: "Zuò chū zhèngquè de xuǎnzé.", exampleTranslation: "Make the right choice." },
+            { hanzi: "要求", pinyin: "yāoqiú", meaning: "permintaan", example: "满足客户的合理要求。", examplePinyin: "Mǎnzú kèhù de hélǐ yāoqiú.", exampleTranslation: "Meet reasonable customer requirements." },
+            { hanzi: "爷爷", pinyin: "yéye", meaning: "kakek", example: "爷爷喜欢在花园遛弯。", examplePinyin: "Yéye xǐhuan zài huāyuán liùwān.", exampleTranslation: "Grandpa likes to stroll in the garden." },
+            { hanzi: "一共", pinyin: "yīgòng", meaning: "total", example: "这些水果一共五十块钱。", examplePinyin: "Zhèxiē shuǐguǒ yīgòng wǔshí kuài qián.", exampleTranslation: "These fruits total fifty yuan." },
+            { hanzi: "一会儿", pinyin: "yíhuìr", meaning: "sebentar", example: "请稍等一会儿。", examplePinyin: "Qǐng shāo děng yíhuìr.", exampleTranslation: "Please wait a moment." },
+            { hanzi: "一路平安", pinyin: "yílù píng'ān", meaning: "selamat jalan", example: "祝你一路平安！", examplePinyin: "Zhù nǐ yílù píng'ān!", exampleTranslation: "Have a safe trip!" },
+            { hanzi: "一样", pinyin: "yīyàng", meaning: "sama", example: "我和你的想法一样。", examplePinyin: "Wǒ hé nǐ de xiǎngfǎ yīyàng.", exampleTranslation: "My thought is same as yours." },
+            { hanzi: "意见", pinyin: "yìjiàn", meaning: "pendapat", example: "提出宝贵的意见。", examplePinyin: "Tíchū bǎoguì de yìjiàn.", exampleTranslation: "Put forward valuable opinions." },
+            { hanzi: "意思", pinyin: "yìsi", meaning: "arti", example: "这个词是什么意思？", examplePinyin: "Zhè gè cí shì shénme yìsi?", exampleTranslation: "What does this word mean?" },
+            { hanzi: "因", pinyin: "yīn", meaning: "karena", example: "因天气原因航班延误。", examplePinyin: "Yīn tiānqì yuányīn hángbān yánwù.", exampleTranslation: "Flight delayed due to weather." },
+            { hanzi: "音乐", pinyin: "yīnyuè", meaning: "musik", example: "听音乐能让人心情愉悦。", examplePinyin: "Tīng yīnyuè néng ràng rén xīnqíng yúyuè.", exampleTranslation: "Listening to music makes one happy." },
+            { hanzi: "银行", pinyin: "yínháng", meaning: "bank", example: "去银行办理业务。", examplePinyin: "Qù yínháng bànlǐ yèwù.", exampleTranslation: "Go to bank for business." },
+            { hanzi: "应该", pinyin: "yīnggāi", meaning: "seharusnya", example: "你应该多喝热水。", examplePinyin: "Nǐ yīnggāi duō hē rèshuǐ.", exampleTranslation: "You should drink more hot water." },
+            { hanzi: "影响", pinyin: "yǐngxiǎng", meaning: "pengaruh", example: "噪音影响休息。", examplePinyin: "Zàoyīn yǐngxiǎng xiūxi.", exampleTranslation: "Noise affects rest." },
+            { hanzi: "用", pinyin: "yòng", meaning: "pakai", example: "用筷子吃饭。", examplePinyin: "Yòng kuàizi chīfàn.", exampleTranslation: "Eat with chopsticks." },
+            { hanzi: "游戏", pinyin: "yóuxì", meaning: "game", example: "小朋友在玩游戏。", examplePinyin: "Xiǎopéngyou zài wán yóuxì.", exampleTranslation: "Children are playing games." },
+            { hanzi: "有名", pinyin: "yǒumíng", meaning: "terkenal", example: "这里是个有名的景点。", examplePinyin: "Zhèlǐ shì gè yǒumíng de jǐngdiǎn.", exampleTranslation: "This is a famous attraction." },
+            { hanzi: "又", pinyin: "yòu", meaning: "lagi", example: "太阳又出来了。", examplePinyin: "Tàiyáng yòu chūlái le.", exampleTranslation: "The sun came out again." },
+            { hanzi: "元", pinyin: "yuán", meaning: "yuan", example: "一本杂志十元。", examplePinyin: "Yī běn zázhì shí yuán.", exampleTranslation: "A magazine costs 10 yuan." },
+            { hanzi: "月亮", pinyin: "yuèliàng", meaning: "bulan", example: "今晚的月亮很圆。", examplePinyin: "Jīnwǎn de yuèliàng hěn yuán.", exampleTranslation: "Tonight's moon is very round." },
+            { hanzi: "越", pinyin: "yuè", meaning: "semakin", example: "雨越下越大。", examplePinyin: "Yǔ yuè xià yuè dà.", exampleTranslation: "The rain is getting heavier." },
+            { hanzi: "云", pinyin: "yún", meaning: "awan", example: "蓝天上飘着朵朵白云。", examplePinyin: "Lántiān shang piāo zhe duǒduǒ bái yún.", exampleTranslation: "White clouds float in blue sky." },
+            { hanzi: "站", pinyin: "zhàn", meaning: "berdiri/stasiun", example: "下一站是北京西站。", examplePinyin: "Xià yī zhàn shì Běijīng Xī Zhàn.", exampleTranslation: "Next stop is Beijing West Station." },
+            { hanzi: "长", pinyin: "zhǎng", meaning: "tumbuh/panjang", example: "这棵树长得很高。", examplePinyin: "Zhè kē shù zhǎng de hěn gāo.", exampleTranslation: "This tree grows very tall." },
+            { hanzi: "照片", pinyin: "zhàopiàn", meaning: "foto", example: "拍一张照片留念。", examplePinyin: "Pāi yī zhāng zhàopiàn liúniàn.", exampleTranslation: "Take a photo as a souvenir." },
+            { hanzi: "照相机", pinyin: "zhàoxiàngjī", meaning: "kamera", example: "用照相机记录美景。", examplePinyin: "Yòng zhàoxiàngjī jìlù měijǐng.", exampleTranslation: "Record scenery with camera." },
+            { hanzi: "者", pinyin: "zhě", meaning: "orang", example: "成功者付出汗水。", examplePinyin: "Chénggōngzhě fùchū hànshuǐ.", exampleTranslation: "Successful ones shed sweat." },
+            { hanzi: "真正", pinyin: "zhēnzhèng", meaning: "sebenar", example: "真正的朋友患难见真情。", examplePinyin: "Zhēnzhèng de péngyou huànnàn jiàn zhēnqíng.", exampleTranslation: "A true friend shows true feelings in hardship." },
+            { hanzi: "正常", pinyin: "zhèngcháng", meaning: "normal", example: "一切恢复正常。", examplePinyin: "Yīqiè huīfù zhèngcháng.", exampleTranslation: "Everything returned to normal." },
+            { hanzi: "正好", pinyin: "zhènghǎo", meaning: "pas", example: "这件衣服我穿正好。", examplePinyin: "Zhè jiàn yīfu wǒ chuān zhènghǎo.", exampleTranslation: "This dress fits me just right." },
+            { hanzi: "正确", pinyin: "zhèngquè", meaning: "benar", example: "给出正确的答案。", examplePinyin: "Gěi chū zhèngquè de dá'àn.", exampleTranslation: "Give the correct answer." },
+            { hanzi: "正式", pinyin: "zhèngshì", meaning: "resmi", example: "代表团正式访问。", examplePinyin: "Dàibiǎotuán zhèngshì fǎngwèn.", exampleTranslation: "Delegation's official visit." },
+            { hanzi: "证明", pinyin: "zhèngmíng", meaning: "membuktikan", example: "用事实证明能力。", examplePinyin: "Yòng shìshí zhèngmíng nénglì.", exampleTranslation: "Prove ability with facts." },
+            { hanzi: "芝麻", pinyin: "zhīma", meaning: "wijen", example: "芝麻烧饼非常香。", examplePinyin: "Zhīma shāobǐng fēicháng xiāng.", exampleTranslation: "Sesame cake is very fragrant." },
+            { hanzi: "只", pinyin: "zhǐ", meaning: "hanya", example: "我只有半个小时。", examplePinyin: "Wǒ zhǐyǒu bàn gè xiǎoshí.", exampleTranslation: "I only have half an hour." },
+            { hanzi: "只好", pinyin: "zhǐhǎo", meaning: "terpaksa", example: "错过了末班车，只好走路。", examplePinyin: "Cuòguò le mòbānchē, zhǐhǎo zǒulù.", exampleTranslation: "Missed the last bus, had to walk." },
+            { hanzi: "种", pinyin: "zhǒng", meaning: "jenis", example: "这种水果很甜。", examplePinyin: "Zhè zhǒng shuǐguǒ hěn tián.", exampleTranslation: "This kind of fruit is sweet." },
+            { hanzi: "重点", pinyin: "zhòngdiǎn", meaning: "poin utama", example: "划出复习的重点。", examplePinyin: "Huà chū fùxí de zhòngdiǎn.", exampleTranslation: "Highlight key points for review." },
+            { hanzi: "重要", pinyin: "zhòngyào", meaning: "penting", example: "身体健康最重要。", examplePinyin: "Shēntǐ jiànkāng zuì zhòngyào.", exampleTranslation: "Good health is most important." },
+            { hanzi: "周末", pinyin: "zhōumò", meaning: "akhir pekan", example: "祝你周末愉快！", examplePinyin: "Zhù nǐ zhōumò yúyuè!", exampleTranslation: "Have a nice weekend!" },
+            { hanzi: "主要", pinyin: "zhǔyào", meaning: "utama", example: "主要原因是缺乏沟通。", examplePinyin: "Zhǔyào yuányīn shì quēfá gōutōng.", exampleTranslation: "Main reason is lack of communication." },
+            { hanzi: "注意", pinyin: "zhùyì", meaning: "perhatikan", example: "过马路注意安全。", examplePinyin: "Guò mǎlù zhùyì ānquán.", exampleTranslation: "Pay attention to safety when crossing street." },
+            { hanzi: "祝", pinyin: "zhù", meaning: "mendoakan", example: "祝你生日快乐！", examplePinyin: "Zhù nǐ shēngrì kuàilè!", exampleTranslation: "Happy birthday to you!" },
+            { hanzi: "祝贺", pinyin: "zhùhè", meaning: "selamat", example: "祝贺你取得好成绩。", examplePinyin: "Zhùhè nǐ qǔdé hǎo chéngjì.", exampleTranslation: "Congratulations on good results." },
+            { hanzi: "著名", pinyin: "zhùmíng", meaning: "terkenal", example: "他是著名的艺术家。", examplePinyin: "Tā shì zhùmíng de yìshùjiā.", exampleTranslation: "He is a famous artist." },
+            { hanzi: "专门", pinyin: "zhuānmén", meaning: "khusus", example: "专门为你准备的礼品。", examplePinyin: "Zhuānmén wèi nǐ zhǔnbèi de lǐpǐn.", exampleTranslation: "Gifts specially prepared for you." },
+            { hanzi: "专业", pinyin: "zhuānyè", meaning: "jurusan", example: "他的专业是经济学。", examplePinyin: "Tā de zhuānyè shì jīngjìxué.", exampleTranslation: "His major is economics." },
+            { hanzi: "转", pinyin: "zhuǎn", meaning: "belok", example: "前面红绿灯向右转。", examplePinyin: "Qiánmiàn hónglǜdēng xiàng yòu zhuǎn.", exampleTranslation: "Turn right at traffic lights ahead." },
+            { hanzi: "赚", pinyin: "zhuàn", meaning: "mencari uang", example: "努力工作赚钱。", examplePinyin: "Nǔlì gōngzuò zhuànqián.", exampleTranslation: "Work hard to make money." },
+            { hanzi: "准备", pinyin: "zhǔnbèi", meaning: "siap", example: "我已经准备好了。", examplePinyin: "Wǒ yǐjīng zhǔnbèi hǎo le.", exampleTranslation: "I am already prepared." },
+            { hanzi: "准确", pinyin: "zhǔnquè", meaning: "akurat", example: "发音非常准确。", examplePinyin: "Fāyīn fēicháng zhǔnquè.", exampleTranslation: "Pronunciation is very accurate." },
+            { hanzi: "桌子", pinyin: "zhuōzi", meaning: "meja", example: "把书放在桌子上。", examplePinyin: "Bǎ shū fàng zài zhuōzi shang.", exampleTranslation: "Put the book on the table." },
+            { hanzi: "准时", pinyin: "zhǔnshí", meaning: "tepat waktu", example: "请准时参加会议。", examplePinyin: "Qǐng zhǔnshí cānjiā huìyì.", exampleTranslation: "Please attend meeting on time." },
+            { hanzi: "字", pinyin: "zì", meaning: "huruf", example: "这个汉字怎么写？", examplePinyin: "Zhè gè Hànzì zěnme xiě?", exampleTranslation: "How to write this character?" },
+            { hanzi: "字典", pinyin: "zìdiǎn", meaning: "kamus", example: "查字典找词义。", examplePinyin: "Chá zìdiǎn zhǎo cíyì.", exampleTranslation: "Look up word meaning in dictionary." },
+            { hanzi: "自己", pinyin: "zìjǐ", meaning: "sendiri", example: "自己的事情自己做。", examplePinyin: "Zìjǐ de shìqing zìjǐ zuò.", exampleTranslation: "Do your own things yourself." },
+            { hanzi: "自行车", pinyin: "zìxíngchē", meaning: "sepeda", example: "骑自行车去上学。", examplePinyin: "Qí zìxíngchē qù shàngxué.", exampleTranslation: "Ride bicycle to school." },
+            { hanzi: "总是", pinyin: "zǒngshì", meaning: "selalu", example: "他总是乐于助人。", examplePinyin: "Tā zǒngshì lèyú zhùrén.", exampleTranslation: "He is always ready to help others." },
+            { hanzi: "最后", pinyin: "zuìhòu", meaning: "terakhir", example: "最后一页是总结。", examplePinyin: "Zuìhòu yī yè shì zǒngjié.", exampleTranslation: "The last page is summary." },
+            { hanzi: "最近", pinyin: "zuìjìn", meaning: "baru-baru ini", example: "最近工作比较忙。", examplePinyin: "Zuìjìn gōngzuò bǐjiào máng.", exampleTranslation: "Recently work has been busy." },
+            { hanzi: "尊重", pinyin: "zūnzhòng", meaning: "menghormati", example: "尊重他人的选择。", examplePinyin: "Zūnzhòng tārén de xuǎnzé.", exampleTranslation: "Respect others' choices." },
+            { hanzi: "左边", pinyin: "zuǒbiān", meaning: "kiri", example: "左边是图书馆。", examplePinyin: "Zuǒbiān shì túshūguǎn.", exampleTranslation: "The library is on the left." },
+            { hanzi: "座", pinyin: "zuò", meaning: "gedung/gunung", example: "一座美丽的桥梁。", examplePinyin: "Yī zuò měilì de qiáoliáng.", exampleTranslation: "A beautiful bridge." },
+            { hanzi: "座位", pinyin: "zuòwèi", meaning: "tempat duduk", example: "请按号入座。", examplePinyin: "Qǐng àn hào rù zuò.", exampleTranslation: "Please take seat according to number." },
+            { hanzi: "阿姨", pinyin: "āyí", meaning: "tante", example: "阿姨做饭很好吃。", examplePinyin: "Āyí zuòfàn hěn hǎochī.", exampleTranslation: "Aunt cooks delicious food." },
+            { hanzi: "啊", pinyin: "a", meaning: "kata seru", example: "这里的风景真美啊！", examplePinyin: "Zhèlǐ de fēngjǐng zhēn měi a!", exampleTranslation: "How beautiful the scenery is!" },
+            { hanzi: "矮", pinyin: "ǎi", meaning: "pendek", example: "哥哥比我高，我比他矮。", examplePinyin: "Gēge bǐ wǒ gāo, wǒ bǐ tā ǎi.", exampleTranslation: "Brother is taller than me, I am shorter." },
+            { hanzi: "爱", pinyin: "ài", meaning: "cinta", example: "妈妈非常爱她的孩子。", examplePinyin: "Māma fēicháng ài tā de háizi.", exampleTranslation: "Mother loves her child very much." },
+            { hanzi: "爱好", pinyin: "àihào", meaning: "hobi", example: "我的爱好是看书和游泳。", examplePinyin: "Wǒ de àihào shì kànshū hé yóuyǒng.", exampleTranslation: "My hobbies are reading and swimming." },
+            { hanzi: "安静", pinyin: "ānjìng", meaning: "tenang", example: "请大家保持安静。", examplePinyin: "Qǐng dàjiā bǎochí ānjìng.", exampleTranslation: "Please stay quiet everyone." },
+            { hanzi: "把", pinyin: "bǎ", meaning: "kata bantu", example: "请把窗户打开。", examplePinyin: "Qǐng bǎ chuānghu dǎkāi.", exampleTranslation: "Please open the window." },
+            { hanzi: "爸爸", pinyin: "bàba", meaning: "ayah", example: "我爸爸是一名工程师。", examplePinyin: "Wǒ bàba shì yī míng gōngchéngshī.", exampleTranslation: "My dad is an engineer." },
+            { hanzi: "吧", pinyin: "ba", meaning: "kata bantu", example: "我们一起出发吧！", examplePinyin: "Wǒmen yīqǐ chūfā ba!", exampleTranslation: "Let's depart together!" },
+            { hanzi: "白", pinyin: "bái", meaning: "putih", example: "天空中飘着白云。", examplePinyin: "Tiānkōng zhōng piāo zhe bái yún.", exampleTranslation: "White clouds float in the sky." },
+            { hanzi: "百", pinyin: "bǎi", meaning: "ratus", example: "这本书有一百页。", examplePinyin: "Zhè běn shū yǒu yībǎi yè.", exampleTranslation: "This book has one hundred pages." },
+            { hanzi: "班", pinyin: "bān", meaning: "kelas", example: "我们在同一个班学习。", examplePinyin: "Wǒmen zài tóngyī gè bān xuéxí.", exampleTranslation: "We study in the same class." },
+            { hanzi: "办法", pinyin: "bànfǎ", meaning: "cara", example: "总会有解决问题的办法。", examplePinyin: "Zǒng huì yǒu jiějué wèntí de bànfǎ.", exampleTranslation: "There is always a way to solve problems." },
+            { hanzi: "半夜", pinyin: "bànyè", meaning: "tengah malam", example: "半夜外面响起了雷声。", examplePinyin: "Bànyè wàimiàn xiǎng qǐ le léishēng.", exampleTranslation: "Thunder sounded outside at midnight." },
+            { hanzi: "帮助", pinyin: "bāngzhù", meaning: "membantu", example: "互相帮助能增进友谊。", examplePinyin: "Hùxiāng bāngzhù néng zēngjìn yǒuyì.", exampleTranslation: "Helping each other enhances friendship." },
+            { hanzi: "包子", pinyin: "bāozi", meaning: "bakpao", example: "早餐吃热气腾腾的包子。", examplePinyin: "Zǎocān chī rèqìténgténg de bāozi.", exampleTranslation: "Eat steaming buns for breakfast." },
+            { hanzi: "报纸", pinyin: "bàozhǐ", meaning: "koran", example: "爷爷每天早上看报纸。", examplePinyin: "Yéye měitiān zǎoshang kàn bàozhǐ.", exampleTranslation: "Grandpa reads newspaper every morning." },
+            { hanzi: "杯子", pinyin: "bēizi", meaning: "gelas", example: "玻璃杯里装满了水。", examplePinyin: "Bōli bēi lǐ zhuāng mǎn le shuǐ.", exampleTranslation: "Glass cup is filled with water." },
+            { hanzi: "北京", pinyin: "Běijīng", meaning: "beijing", example: "北京是中国的首都。", examplePinyin: "Běijīng shì Zhōngguó de shǒudū.", exampleTranslation: "Beijing is the capital of China." },
+            { hanzi: "被", pinyin: "bèi", meaning: "oleh", example: "苹果被小鸟吃了。", examplePinyin: "Píngguǒ bèi xiǎoniǎo chī le.", exampleTranslation: "The apple was eaten by bird." },
+            { hanzi: "本", pinyin: "běn", meaning: "buku", example: "桌上有一本书。", examplePinyin: "Zhuō shang yǒu yī běn shū.", exampleTranslation: "There is a book on table." },
+            { hanzi: "本子", pinyin: "běnzi", meaning: "buku catatan", example: "用本子记下重要事项。", examplePinyin: "Yòng běnzi jì xià zhòngyào shìxiàng.", exampleTranslation: "Use notebook to note important items." },
+            { hanzi: "比", pinyin: "bǐ", meaning: "daripada", example: "今天比昨天冷。", examplePinyin: "Jīntiān bǐ zuótiān lěng.", exampleTranslation: "Today is colder than yesterday." },
+            { hanzi: "比赛", pinyin: "bǐsài", meaning: "pertandingan", example: "足球比赛非常精彩。", examplePinyin: "Zúqiú bǐsài fēicháng jīngcǎi.", exampleTranslation: "Football match is very exciting." },
+            { hanzi: "毕业", pinyin: "bìyè", meaning: "lulus", example: "祝贺你顺利毕业！", examplePinyin: "Zhùhè nǐ shùnlì bìyè!", exampleTranslation: "Congratulations on graduating successfully!" },
+            { hanzi: "变化", pinyin: "biànhuà", meaning: "perubahan", example: "天气变化要及时加衣。", examplePinyin: "Tiānqì biànhuà yào jíshí jiā yī.", exampleTranslation: "Add clothes when weather changes." },
+            { hanzi: "表达", pinyin: "biǎodá", meaning: "mengungkapkan", example: "用语言表达感激之情。", examplePinyin: "Yòng yǔyán biǎodá gǎnjī zhī qíng.", exampleTranslation: "Express gratitude in words." },
+            { hanzi: "表扬", pinyin: "biǎoyáng", meaning: "memuji", example: "老师表扬了他的进步。", examplePinyin: "Lǎoshī biǎoyáng le tā de jìnbù.", exampleTranslation: "Teacher praised his progress." },
+            { hanzi: "冰激凌", pinyin: "bīngjīlíng", meaning: "es krim", example: "夏天吃冰激凌很解暑。", examplePinyin: "Xiàtiān chī bīngjīlíng hěn jiěshǔ.", exampleTranslation: "Eating ice cream relieves summer heat." },
+            { hanzi: "饼干", pinyin: "bǐnggān", meaning: "biskuit", example: "喝茶时吃点饼干。", examplePinyin: "Hē chá shí chī diǎn bǐnggān.", exampleTranslation: "Eat biscuits while drinking tea." },
+            { hanzi: "病人", pinyin: "bìngrén", meaning: "pasien", example: "医生在耐心照顾病人。", examplePinyin: "Yīshēng zài nàixīn zhàogù bìngrén.", exampleTranslation: "Doctor takes care of patient patiently." },
+            { hanzi: "博物馆", pinyin: "bówùguǎn", meaning: "museum", example: "博物馆展出了古物。", examplePinyin: "Bówùguǎn zhǎnchū le gǔwù.", exampleTranslation: "Museum exhibited ancient relics." },
+            { hanzi: "补充", pinyin: "bǔchōng", meaning: "melengkapi", example: "有需要补充的吗？", examplePinyin: "Yǒu xūyào bǔchōng de ma?", exampleTranslation: "Anything to supplement?" },
+            { hanzi: "不客气", pinyin: "bù kèqi", meaning: "sama-sama", example: "不用谢，不客气！", examplePinyin: "Bùyòng xiè, bù kèqi!", exampleTranslation: "You're welcome!" },
+            { hanzi: "不", pinyin: "bù", meaning: "tidak", example: "我不吃辣的食物。", examplePinyin: "Wǒ bù chī là de shíwù.", exampleTranslation: "I don't eat spicy food." },
+            { hanzi: "不得不", pinyin: "bùdébù", meaning: "harus", example: "天下雨我不得不打伞。", examplePinyin: "Tiān xiàyǔ wǒ bùdébù dǎ sǎn.", exampleTranslation: "It rains, I have to open umbrella." },
+            { hanzi: "不管", pinyin: "bùguǎn", meaning: "tidak peduli", example: "不管多难我都会坚持。", examplePinyin: "Bùguǎn duō nán wǒ dōu huì jiānchí.", exampleTranslation: "No matter how hard, I will persist." },
+            { hanzi: "不仅", pinyin: "bùjǐn", meaning: "tidak hanya", example: "她不仅聪明而且努力。", examplePinyin: "Tā bùjǐn cōngmíng érqiě nǔlì.", exampleTranslation: "She is not only smart but diligent." },
+            { hanzi: "部分", pinyin: "bùfen", meaning: "bagian", example: "完成了大部分任务。", examplePinyin: "Wánchéng le dà bùfen rènwu.", exampleTranslation: "Completed most of tasks." },
+            { hanzi: "擦", pinyin: "cā", meaning: "lap", example: "用抹布擦玻璃。", examplePinyin: "Yòng mābù cā bōli.", exampleTranslation: "Wipe glass with a rag." },
+            { hanzi: "猜", pinyin: "cāi", meaning: "tebak", example: "猜猜盒子里是什么。", examplePinyin: "Cāi cāi hézi lǐ shì shénme.", exampleTranslation: "Guess what's in the box." },
+            { hanzi: "才", pinyin: "cái", meaning: "baru", example: "他九点才到办公室。", examplePinyin: "Tā jiǔ diǎn cái dào bàngōngshì.", exampleTranslation: "He only arrived at office at nine." },
+            { hanzi: "菜", pinyin: "cài", meaning: "sayur/masakan", example: "今晚做几道好菜。", examplePinyin: "Jīnwǎn zuò jǐ dào hǎo cài.", exampleTranslation: "Cook several good dishes tonight." },
+            { hanzi: "菜单", pinyin: "càidān", meaning: "menu", example: "服务员，请拿菜单。", examplePinyin: "Fúwùyuán, qǐng ná càidān.", exampleTranslation: "Waiter, please bring the menu." },
+            { hanzi: "参观", pinyin: "cānguān", meaning: "kunjungan", example: "参观科技展览。", examplePinyin: "Cānguān kējì zhǎnlǎn.", exampleTranslation: "Visit science exhibition." },
+            { hanzi: "参加", pinyin: "cānjiā", meaning: "ikut", example: "积极参加志愿活动。", examplePinyin: "Jījí cānjiā zhìyuàn huódòng.", exampleTranslation: "Actively participate in volunteer activities." },
+            { hanzi: "草", pinyin: "cǎo", meaning: "rumput", example: "草地上开满了小花。", examplePinyin: "Cǎodì shang kāi mǎn le xiǎohuā.", exampleTranslation: "Small flowers bloom on the grass." },
+            { hanzi: "层", pinyin: "céng", meaning: "lapisan", example: "楼房高有二十层。", examplePinyin: "Lóufáng gāo yǒu èrshí céng.", exampleTranslation: "The building is twenty stories high." },
+            { hanzi: "茶", pinyin: "chá", meaning: "teh", example: "品尝一杯热绿茶。", examplePinyin: "Pǐncháng yī bēi rè lǜchá.", exampleTranslation: "Taste a cup of hot green tea." },
+            { hanzi: "差", pinyin: "chà", meaning: "kurang", example: "现在是差五分八点。", examplePinyin: "Xiànzài shì chà wǔ fēn bā diǎn.", exampleTranslation: "It's five to eight now." },
+            { hanzi: "长", pinyin: "cháng", meaning: "panjang", example: "万里长城非常长。", examplePinyin: "Wànlǐ Chángchéng fēicháng cháng.", exampleTranslation: "The Great Wall is very long." },
+            { hanzi: "唱歌", pinyin: "chànggē", meaning: "menyanyi", example: "她唱歌唱得非常好听。", examplePinyin: "Tā chànggē chàng de fēicháng hǎotīng.", exampleTranslation: "She sings very beautifully." },
+            { hanzi: "超市", pinyin: "chāoshì", meaning: "supermarket", example: "去超市买生活用品。", examplePinyin: "Qù chāoshì mǎi shēnghuó yòngpǐn.", exampleTranslation: "Go to supermarket for groceries." },
+            { hanzi: "衬衫", pinyin: "chènshān", meaning: "kemeja", example: "熨烫平整的衬衫。", examplePinyin: "Yùntàng píngzhěng de chènshān.", exampleTranslation: "Ironed flat shirt." },
+            { hanzi: "成功", pinyin: "chénggōng", meaning: "sukses", example: "祝贺你取得成功！", examplePinyin: "Zhùhè nǐ qǔdé chénggōng!", exampleTranslation: "Congratulations on achieving success!" },
+            { hanzi: "成绩", pinyin: "chéngjì", meaning: "nilai", example: "努力提高学习成绩。", examplePinyin: "Nǔlì tígāo xuéxí chéngjì.", exampleTranslation: "Strive to improve academic grades." },
+            { hanzi: "成熟", pinyin: "chéngshú", meaning: "matang", example: "秋天果实都成熟了。", examplePinyin: "Qiūtiān guǒshí dōu chéngshú le.", exampleTranslation: "Fruits mature in autumn." },
+            { hanzi: "吃", pinyin: "chī", meaning: "makan", example: "大家一起吃午饭。", examplePinyin: "Dàjiā yīqǐ chī wǔfàn.", exampleTranslation: "Everyone eat lunch together." },
+            { hanzi: "吃惊", pinyin: "chījīng", meaning: "kaget", example: "变化之大令人吃惊。", examplePinyin: "Biànhuà zhī dà lìng rén chījīng.", exampleTranslation: "Great changes are surprising." },
+            { hanzi: "迟到", pinyin: "chídào", meaning: "terlambat", example: "上学不要迟到。", examplePinyin: "Shàngxué bùyào chídào.", exampleTranslation: "Don't be late for school." },
+            { hanzi: "出", pinyin: "chū", meaning: "keluar", example: "走出房间呼吸新鲜空气。", examplePinyin: "Zǒu chū fángjiān hūxī xīnxiān kōngqì.", exampleTranslation: "Walk out room to breathe fresh air." },
+            { hanzi: "出现", pinyin: "chūxiàn", meaning: "muncul", example: "彩虹出现在天空中。", examplePinyin: "Cǎihóng chūxiàn zài tiānkōng zhōng.", exampleTranslation: "A rainbow appeared in the sky." },
+            { hanzi: "出租车", pinyin: "chūzūchē", meaning: "taksi", example: "打出租车去机场。", examplePinyin: "Dǎ chūzūchē qù jīchǎng.", exampleTranslation: "Take a taxi to airport." },
+            { hanzi: "厨房", pinyin: "chúfáng", meaning: "dapur", example: "厨房收拾得很打理收拾干净。", examplePinyin: "Chúfáng shōushi de hěn dǎlǐ shōushi gānjìng.", exampleTranslation: "The kitchen is cleaned neatly." },
+            { hanzi: "除了", pinyin: "chúle", meaning: "selain", example: "除了小明大家人都到了。", examplePinyin: "Chúle Xiǎomíng dàjiā rén dōu dào le.", exampleTranslation: "Everyone except Xiaoming has arrived." },
+            { hanzi: "穿", pinyin: "chuān", meaning: "pakai", example: "天冷了多穿衣服。", examplePinyin: "Tiān lěng le duō chuān yīfu.", exampleTranslation: "Wear more clothes in cold weather." },
+            { hanzi: "船", pinyin: "chuán", meaning: "perahu", example: "小船划向江心。", examplePinyin: "Xiǎochuán huá xiàng jiāngxīn.", exampleTranslation: "Small boat rowed to river center." },
+            { hanzi: "春", pinyin: "chūn", meaning: "musim semi", example: "春暖花开景色宜人。", examplePinyin: "Chūnnuǎnhuākāi jǐngsè yírén.", exampleTranslation: "Spring blossoms offer pleasant scenery." },
+            { hanzi: "词典", pinyin: "cídiǎn", meaning: "kamus", example: "查阅汉语词典。", examplePinyin: "Cháyuè Hànyǔ cídiǎn.", exampleTranslation: "Consult Chinese dictionary." },
+            { hanzi: "词语", pinyin: "cíyǔ", meaning: "kosakata", example: "积累更多的词语。", examplePinyin: "Jīlěi gèng duō de cíyǔ.", exampleTranslation: "Accumulate more vocabulary words." },
+            { hanzi: "次", pinyin: "cì", meaning: "kali", example: "这是我第一次来北京。", examplePinyin: "Zhè shì wǒ dì yī cì lái Běijīng.", exampleTranslation: "This is my first time visiting Beijing." },
+            { hanzi: "聪明", pinyin: "cōngmíng", meaning: "pintar", example: "聪明的学生善于思考。", examplePinyin: "Cōngmíng de xuésheng shànyú sīkǎo.", exampleTranslation: "Smart students excel at thinking." },
+            { hanzi: "从", pinyin: "cóng", meaning: "dari", example: "从基础开始学习。", examplePinyin: "Cóng jīchǔ kāishǐ xuéxí.", exampleTranslation: "Start learning from basics." },
+            { hanzi: "从来", pinyin: "cónglái", meaning: "selalu/pernah", example: "他从来不迟到。", examplePinyin: "Tā cónglái bù chídào.", exampleTranslation: "He is never late." },
+            { hanzi: "粗心", pinyin: "cūxīn", meaning: "ceroboh", example: "做题时切忌粗心大意。", examplePinyin: "Zuò tímù shí qièjì cūxīndàyì.", exampleTranslation: "Avoid carelessness when answering questions." },
+            { hanzi: "错", pinyin: "cuò", meaning: "salah", example: "找出文章中的错字。", examplePinyin: "Zhǎo chū wénzhāng zhōng de cuòzì.", exampleTranslation: "Find wrong characters in article." },
+            { hanzi: "打电话", pinyin: "dǎ diànhuà", meaning: "telepon", example: "给家里打电话报平安。", examplePinyin: "Gěi jiālǐ dǎ diànhuà bào píng'ān.", exampleTranslation: "Call home to report safe arrival." },
+            { hanzi: "打篮球", pinyin: "dǎ lánqiú", meaning: "main basket", example: "放学后去打篮球。", examplePinyin: "Fàngxué hòu qù dǎ lánqiú.", exampleTranslation: "Go play basketball after school." },
+            { hanzi: "打扫", pinyin: "dǎsǎo", meaning: "membersihkan", example: "把房间打扫干净。", examplePinyin: "Bǎ fángjiān dǎsǎo gānjìng.", exampleTranslation: "Clean room thoroughly." },
+            { hanzi: "打算", pinyin: "dǎsuàn", meaning: "rencana", example: "毕业后你有什么打算？", examplePinyin: "Bìyè hòu nǐ yǒu shénme dǎsuàn?", exampleTranslation: "What are your plans after graduation?" },
+            { hanzi: "大", pinyin: "dà", meaning: "besar", example: "这是一座巨大的建筑物。", examplePinyin: "Zhè shì yī zuò jùdà de jiànzhùwù.", exampleTranslation: "This is a huge building." },
+            { hanzi: "大家", pinyin: "dàjiā", meaning: "semua orang", example: "请大家注意听讲。", examplePinyin: "Qǐng dàjiā zhùyì tīngjiǎng.", exampleTranslation: "Everyone please listen attentively." },
+            { hanzi: "大使馆", pinyin: "dàshǐguǎn", meaning: "kedubes", example: "前往大使馆办手续。", examplePinyin: "Qiánwǎng dàshǐguǎn bàn shǒuxù.", exampleTranslation: "Go to embassy to process procedures." },
+            { hanzi: "大约", pinyin: "dàyuē", meaning: "kira-kira", example: "大约有三十个人参加。", examplePinyin: "Dàyuē yǒu sānshí gè rén cānjiā.", exampleTranslation: "About thirty people attended." },
+            { hanzi: "带", pinyin: "dài", meaning: "bawa", example: "出门要记得带钥匙。", examplePinyin: "Chūmén yào jìde dài yàoshi.", exampleTranslation: "Remember to bring keys when leaving." },
+            { hanzi: "戴", pinyin: "dài", meaning: "memakai", example: "戴手套御寒。", examplePinyin: "Dài shǒutào yùhán.", exampleTranslation: "Wear gloves against cold." },
+            { hanzi: "代表", pinyin: "dàibiǎo", meaning: "mewakili", example: "他代表公司发言。", examplePinyin: "Tā dàibiǎo gōngsī fāyán.", exampleTranslation: "He spoke on behalf of company." },
+            { hanzi: "代替", pinyin: "dàitì", meaning: "menggantikan", example: "用新方法代替旧方法。", examplePinyin: "Yòng xīn fāngfǎ dàitì jiù fāngfǎ.", exampleTranslation: "Replace old methods with new ones." },
+            { hanzi: "大夫", pinyin: "dàifu", meaning: "dokter", example: "大夫,我头有点疼。", examplePinyin: "Dàifu, wǒ tóu yǒudiǎn téng.", exampleTranslation: "Doctor, I have a slight headache." },
+            { hanzi: "担心", pinyin: "dānxīn", meaning: "khawatir", example: "别为我担心。", examplePinyin: "Bié wèi wǒ dānxīn.", exampleTranslation: "Don't worry about me." },
+            { hanzi: "蛋糕", pinyin: "dàngāo", meaning: "kue", example: "分享生日蛋糕。", examplePinyin: "Fēnxiǎng shēngrì dàngāo.", exampleTranslation: "Share birthday cake." },
+            { hanzi: "但是", pinyin: "dànshì", meaning: "tetapi", example: "虽然累,但是很开心。", examplePinyin: "Suīrán lèi, dànshì hěn kāixīn.", exampleTranslation: "Although tired, but very happy." },
+            { hanzi: "当", pinyin: "dāng", meaning: "menjadi", example: "长大后我想当老师。", examplePinyin: "Zhǎngdà hòu wǒ xiǎng dāng lǎoshī.", exampleTranslation: "I want to be a teacher when I grow up." },
+            { hanzi: "当地", pinyin: "dāngdì", meaning: "lokal", example: "品尝当地特色美食。", examplePinyin: "Pǐncháng dāngdì tèsè měishí.", exampleTranslation: "Taste local special delicacies." },
+            { hanzi: "刀", pinyin: "dāo", meaning: "pisau", example: "切菜时当心被刀割伤。", examplePinyin: "Qiē cài shí dāngxīn bèi dāo gēshāng.", exampleTranslation: "Be careful not to cut yourself with knife when chopping vegetables." },
+            { hanzi: "岛", pinyin: "dǎo", meaning: "pulau", example: "这座小岛环境优美。", examplePinyin: "Zhè zuò xiǎodǎo huánjìng yōuměi.", exampleTranslation: "This small island has beautiful surroundings." },
+            { hanzi: "到处", pinyin: "dàochù", meaning: "di mana-mana", example: "春天的花到处开放。", examplePinyin: "Chūntiān de huā dàochù kāifàng.", exampleTranslation: "Spring flowers bloom everywhere." },
+            { hanzi: "到底", pinyin: "dàodǐ", meaning: "akhirnya", example: "坚持到底就是胜利。", examplePinyin: "Jiānchí dàodǐ jiùshì shènglì.", exampleTranslation: "Persisting to end is victory." },
+            { hanzi: "倒", pinyin: "dào", meaning: "tuang", example: "倒一杯温开水。", examplePinyin: "Dào yī bēi wēn kāishuǐ.", exampleTranslation: "Pour a glass of warm boiled water." },
+            { hanzi: "道歉", pinyin: "dàoqiàn", meaning: "minta maaf", example: "向受害者表示道歉。", examplePinyin: "Xiàng shòuhuàizhě biǎoshì dàoqiàn.", exampleTranslation: "Express apology to victim." },
+            { hanzi: "地", pinyin: "de", meaning: "kata bantu", example: "认真地做作业。", examplePinyin: "Rènzhēn de zuò zuòyè.", exampleTranslation: "Do homework earnestly." },
+            { hanzi: "的", pinyin: "de", meaning: "kepunyaan", example: "这是我的红领巾。", examplePinyin: "Zhè shì wǒ de hónglǐngjīn.", exampleTranslation: "This is my red scarf." },
+            { hanzi: "得", pinyin: "de", meaning: "kata bantu", example: "跑得非常快。", examplePinyin: "Pǎo de fēicháng kuài.", exampleTranslation: "Runs extremely fast." },
+            { hanzi: "得意", pinyin: "déyì", meaning: "bangga", example: "别太得意忘形。", examplePinyin: "Bié tài déyìwàngxíng.", exampleTranslation: "Don't get too carried away with success." },
+            { hanzi: "得", pinyin: "děi", meaning: "harus", example: "天黑了,我得回家了。", examplePinyin: "Tiān hēi le, wǒ děi huíjiā le.", exampleTranslation: "It's dark, I must go home." },
+            { hanzi: "灯", pinyin: "dēng", meaning: "lampu", example: "离开房间请关灯。", examplePinyin: "Líkāi fángjiān qǐng guān dēng.", exampleTranslation: "Please turn off lights when leaving room." },
+            { hanzi: "等", pinyin: "děng", meaning: "tunggu", example: "请在休息室稍等。", examplePinyin: "Qǐng zài xiūxīshì shāo děng.", exampleTranslation: "Please wait a moment in lounge." },
+            { hanzi: "低", pinyin: "dī", meaning: "rendah", example: "声音放低一点。", examplePinyin: "Shēngyīn fàng dī yīdiǎn.", exampleTranslation: "Keep voice a bit lower." },
+            { hanzi: "底", pinyin: "dǐ", meaning: "dasar", example: "水底能看到小鱼。", examplePinyin: "Shuǐ dǐ néng kàndào xiǎoyú.", exampleTranslation: "Fish can be seen at bottom of water." },
+            { hanzi: "弟弟", pinyin: "dìdi", meaning: "adik laki-laki", example: "弟弟正在读小学。", examplePinyin: "Dìdi zhèngzài dú xiǎoxué.", exampleTranslation: "Younger brother is attending primary school." },
+            { hanzi: "地方", pinyin: "dìfang", meaning: "tempat", example: "这是一个好地方。", examplePinyin: "Zhè shì yī gè hǎo dìfang.", exampleTranslation: "This is a good place." },
+            { hanzi: "地球", pinyin: "dìqiú", meaning: "bumi", example: "保护地球是每个人的责任。", examplePinyin: "Bǎohù dìqiú shì měi gè rén de zérèn.", exampleTranslation: "Protecting Earth is everyone's responsibility." },
+            { hanzi: "地铁", pinyin: "dìtiě", meaning: "subway", example: "乘坐地铁很准时。", examplePinyin: "Chéngzuò dìtiě hěn zhǔnshí.", exampleTranslation: "Taking subway is very punctual." },
+            { hanzi: "地图", pinyin: "dìtú", meaning: "peta", example: "在地图上找位置。", examplePinyin: "Zài dìtú shang zhǎo wèi zhi.", exampleTranslation: "Find location on map." },
+            { hanzi: "地址", pinyin: "dìzhǐ", meaning: "alamat", example: "填写投递地址。", examplePinyin: "Tiánxiě tóudì dìzhǐ.", exampleTranslation: "Fill in delivery address." },
+            { hanzi: "第一", pinyin: "dì-yī", meaning: "pertama", example: "获得比赛第一名。", examplePinyin: "Huòdé bǐsài dì-yī míng.", exampleTranslation: "Win first place in competition." },
+            { hanzi: "点", pinyin: "diǎn", meaning: "jam/titik", example: "现在是下午三点。", examplePinyin: "Xiànzài shì xiàwǔ sān diǎn.", exampleTranslation: "It's three o'clock in the afternoon now." },
+            { hanzi: "电脑", pinyin: "diànnǎo", meaning: "komputer", example: "用电脑处理文件。", examplePinyin: "Yòng diànnǎo chǔlǐ wénjiàn.", exampleTranslation: "Use computer to process files." },
+            { hanzi: "电视", pinyin: "diànshì", meaning: "tv", example: "晚上看电视节目。", examplePinyin: "Wǎnshang kàn diànshì jiémù.", exampleTranslation: "Watch TV shows at night." },
+            { hanzi: "电梯", pinyin: "diàntī", meaning: "lift", example: "乘坐电梯上楼。", examplePinyin: "Chéngzuò diàntī shàng lóu.", exampleTranslation: "Take elevator upstairs." },
+            { hanzi: "电影", pinyin: "diànyǐng", meaning: "film", example: "周末和朋友看电影。", examplePinyin: "Zhōumò hé péngyou kàn diànyǐng.", exampleTranslation: "Watch movie with friends on weekend." },
+            { hanzi: "电子邮件", pinyin: "diànzǐ yóujiàn", meaning: "email", example: "收取电子邮件。", examplePinyin: "Shōuqǔ diànzǐ yóujiàn.", exampleTranslation: "Receive emails." },
+            { hanzi: "调查", pinyin: "diàochá", meaning: "survei", example: "进行市场调查。", examplePinyin: "Jìnxíng shìchǎng diàochá.", exampleTranslation: "Conduct market survey." },
+            { hanzi: "掉", pinyin: "diào", meaning: "jatuh", example: "手机掉在沙发上了。", examplePinyin: "Shǒujī diào zài shāfā shang le.", exampleTranslation: "Phone dropped on sofa." },
+            { hanzi: "丢", pinyin: "diū", meaning: "hilang", example: "钥匙不小心丢了。", examplePinyin: "Yàoshi bù xiǎoxīn diū le.", exampleTranslation: "Keys accidentally lost." },
+            { hanzi: "东", pinyin: "dōng", meaning: "timur", example: "太阳升自东方。", examplePinyin: "Tàiyáng shēng zì dōngfāng.", exampleTranslation: "The sun rises from east." },
+            { hanzi: "冬", pinyin: "dōng", meaning: "musim dingin", example: "冬天会下雪。", examplePinyin: "Dōngtiān huì xiàxuě.", exampleTranslation: "It snows in winter." },
+            { hanzi: "东西", pinyin: "dōngxi", meaning: "barang", example: "把桌上的东西收拾好。", examplePinyin: "Bǎ zhuō shang de dōngxi shōushi hǎo.", exampleTranslation: "Pack up things on table." },
+            { hanzi: "懂得", pinyin: "dǒngde", meaning: "mengerti", example: "懂得感恩的人最美。", examplePinyin: "Dǒngde gǎn'ēn de rén zuì měi.", exampleTranslation: "Those who know gratitude are most beautiful." },
+            { hanzi: "动物", pinyin: "dòngwù", meaning: "hewan", example: "关爱野生动物。", examplePinyin: "Guān'ài yěshēng dòngwù.", exampleTranslation: "Care for wild animals." },
+            { hanzi: "动作", pinyin: "dòngzuò", meaning: "gerakan", example: "舞蹈动作非常优美。", examplePinyin: "Wǔdào dòngzuò fēicháng yōuměi.", exampleTranslation: "Dance movements are graceful." },
+            { hanzi: "都", pinyin: "dōu", meaning: "semua", example: "大家都到了。", examplePinyin: "Dàjiā dōu dào le.", exampleTranslation: "Everyone arrived." },
+            { hanzi: "读", pinyin: "dú", meaning: "baca", example: "每天大声朗读课文。", examplePinyin: "Měitiān dàshēng lǎngdú kèwén.", exampleTranslation: "Read text aloud every day." },
+            { hanzi: "堵车", pinyin: "dǔchē", meaning: "macet", example: "早高峰路上很堵车。", examplePinyin: "Zǎogāofēng lùshang hěn dǔchē.", exampleTranslation: "Roads are jammed in morning rush hour." },
+            { hanzi: "肚子", pinyin: "dùzi", meaning: "perut", example: "肚子饿了吃东西。", examplePinyin: "Dùzi è le chī dōngxi.", exampleTranslation: "Eat something when hungry." },
+            { hanzi: "短", pinyin: "duǎn", meaning: "pendek", example: "时间很短,抓紧配合。", examplePinyin: "Shíjiān hěn duǎn, zhuājǐn pèihé.", exampleTranslation: "Time is short, hurry and cooperate." },
+            { hanzi: "段", pinyin: "duàn", meaning: "paragraf", example: "写一段简短的自我介绍。", examplePinyin: "Xiě yī duàn jiǎnduǎn de zìwǒ jièshào.", exampleTranslation: "Write a short self-introduction paragraph." },
+            { hanzi: "锻炼", pinyin: "duànliàn", meaning: "olahraga", example: "晨跑是很好的锻炼方式。", examplePinyin: "Chénpǎo shì hěn hǎo de duànliàn fāngshì.", exampleTranslation: "Morning running is good exercise." },
+            { hanzi: "对", pinyin: "duì", meaning: "benar/terhadap", example: "回答非常正确。", examplePinyin: "Huídá fēicháng zhèngquè.", exampleTranslation: "Answer is very correct." },
+            { hanzi: "对不起", pinyin: "duìbuqǐ", meaning: "maaf", example: "对不起,我迟到了。", examplePinyin: "Duìbuqǐ, wǒ chídào le.", exampleTranslation: "Sorry, I am late." },
+            { hanzi: "对话", pinyin: "duìhuà", meaning: "dialog", example: "练习双人汉语对话。", examplePinyin: "Liànxí shuāngrén Hànyǔ duìhuà.", exampleTranslation: "Practice two-person Chinese dialogue." },
+            { hanzi: "对面", pinyin: "duìmiàn", meaning: "seberang", example: "银行就在超市对面。", examplePinyin: "Yínháng jiù zài chāoshì duìmiàn.", exampleTranslation: "Bank is opposite supermarket." },
+            { hanzi: "吨", pinyin: "dūn", meaning: "ton", example: "这卡车载重十吨。", examplePinyin: "Zhè kǎchē zǎizhòng shí dūn.", exampleTranslation: "This truck carries ten tons." },
+            { hanzi: "多", pinyin: "duō", meaning: "banyak", example: "多吃蔬菜身体好。", examplePinyin: "Duō chī shūcài shēntǐ hǎo.", exampleTranslation: "Eat more vegetables for good health." },
+            { hanzi: "多么", pinyin: "duōme", meaning: "betapa", example: "这里的景色多么美啊！", examplePinyin: "Zhèlǐ de fēngjǐng duōme měi a!", exampleTranslation: "How beautiful the scenery here is!" },
+            { hanzi: "多少", pinyin: "duōshao", meaning: "berapa", example: "请问这个多少钱？", examplePinyin: "Qǐngwèn zhè gè duōshao qián?", exampleTranslation: "How much is this, please?" },
+            { hanzi: "朵", pinyin: "duǒ", meaning: "kuntum", example: "送你一朵小红花。", examplePinyin: "Sòng nǐ yī duǒ xiǎohónghuā.", exampleTranslation: "Give you a small red flower." },
+            { hanzi: "饿", pinyin: "è", meaning: "lapar", example: "肚子饿了想吃面。", examplePinyin: "Dùzi è le xiǎng chī miàn.", exampleTranslation: "Hungry and want to eat noodles." },
+            { hanzi: "儿童", pinyin: "értóng", meaning: "anak-anak", example: "关心儿童健康成长。", examplePinyin: "Guān'ài értóng jiànkāng chéngzhǎng.", exampleTranslation: "Care for healthy growth of children." },
+            { hanzi: "耳朵", pinyin: "ěrduo", meaning: "telinga", example: "戴上耳机听声音。", examplePinyin: "Dài shàng ěrjī tīng shēngyīn.", exampleTranslation: "Put on headphones to listen to sound." },
+            { hanzi: "二", pinyin: "èr", meaning: "dua", example: "一加一等于二。", examplePinyin: "Yī jiā yī děngyú èr.", exampleTranslation: "One plus one equals two." },
+            { hanzi: "发烧", pinyin: "fāshāo", meaning: "demam", example: "生病发烧要看医生。", examplePinyin: "Shēngbìng fāshāo yào kàn yīshēng.", exampleTranslation: "See doctor when sick with fever." },
+            { hanzi: "发生", pinyin: "fāshēng", meaning: "terjadi", example: "突发事件发生了。", examplePinyin: "Tūfā shìjiàn fāshēng le.", exampleTranslation: "An emergency occurred." },
+            { hanzi: "发现", pinyin: "fāxiàn", meaning: "menemukan", example: "发现问题及时解决。", examplePinyin: "Fāxiàn wèntí jíshí jiějué.", exampleTranslation: "Solve problems promptly upon discovery." },
+            { hanzi: "发展", pinyin: "fāzhǎn", meaning: "berkembang", example: "促进经济健康发展。", examplePinyin: "Cùjìn jīngjì jiànkāng fāzhǎn.", exampleTranslation: "Promote healthy economic development." },
+            { hanzi: "法律", pinyin: "fǎlǜ", meaning: "hukum", example: "人人都要人人人人遵守法律。", examplePinyin: "Rénrén dōu yào rénrén rénrén zūnshǒu fǎlǜ.", exampleTranslation: "Everyone must abide by law." },
+            { hanzi: "翻译", pinyin: "fānyì", meaning: "menerjemahkan", example: "把英文翻译成中文。", examplePinyin: "Bǎ Yīngwén fānyì chéng Zhōngwén.", exampleTranslation: "Translate English into Chinese." },
+            { hanzi: "烦恼", pinyin: "fánnǎo", meaning: "risau", example: "抛开烦恼拥抱快乐。", examplePinyin: "Pāokāi fánnǎo yōngbào kuàilè.", exampleTranslation: "Put aside worries and embrace happiness." },
+            { hanzi: "反对", pinyin: "fǎnduì", meaning: "menentang", example: "没人反对这个提议。", examplePinyin: "Méi rén fǎnduì zhè gè tíyì.", exampleTranslation: "No one opposes this proposal." },
+            { hanzi: "反映", pinyin: "fǎnyìng", meaning: "mencerminkan", example: "文章反映了社会现实。", examplePinyin: "Wénzhāng fǎnyìng le shèhuì xiànshí.", exampleTranslation: "Article reflects social reality." },
+            { hanzi: "饭店", pinyin: "fàndiàn", meaning: "restoran/hotel", example: "在饭店订一桌菜。", examplePinyin: "Zài fàndiàn dìng yī zhuō cài.", exampleTranslation: "Book a table of food at restaurant." },
+            { hanzi: "方便", pinyin: "fāngbiàn", meaning: "praktis", example: "在线支付非常方便。", examplePinyin: "Zàixiàn zhīfù fēicháng fāngbiàn.", exampleTranslation: "Online payment is very convenient." },
+            { hanzi: "方法", pinyin: "fāngfǎ", meaning: "metode", example: "掌握正确的学习方法。", examplePinyin: "Zhǎowò zhèngquè de xuéxí fāngfǎ.", exampleTranslation: "Master correct learning methods." },
+            { hanzi: "方面", pinyin: "fāngmiàn", meaning: "aspek", example: "各方面都要取得进步。", examplePinyin: "Gè fāngmiàn dōu yào qǔdé jìnbù.", exampleTranslation: "Make progress in all aspects." },
+            { hanzi: "方向", pinyin: "fāngxiàng", meaning: "arah", example: "指明前进的方向。", examplePinyin: "Zhǐmíng qiánjìn de fāngxiàng.", exampleTranslation: "Point out direction forward." },
+            { hanzi: "房间", pinyin: "fángjiān", meaning: "kamar", example: "把房间收拾整洁。", examplePinyin: "Bǎ fángjiān shōushi zhěngjié.", exampleTranslation: "Tidy up room neatly." },
+            { hanzi: "访问", pinyin: "fǎngwèn", meaning: "mengunjungi", example: "友好访问邻国。", examplePinyin: "Yǒuhǎo fǎngwèn lǐnguó.", exampleTranslation: "Friendly visit to neighboring country." },
+            { hanzi: "放", pinyin: "fàng", meaning: "meletakkan", example: "把包放在椅背上。", examplePinyin: "Bǎ bāo fàng zài yǐbèi shang.", exampleTranslation: "Put bag on back of chair." },
+            { hanzi: "放弃", pinyin: "fàngqì", meaning: "menyerah", example: "永不放弃希望。", examplePinyin: "Yǒng bù fàngqì xīwàng.", exampleTranslation: "Never give up hope." },
+            { hanzi: "放假", pinyin: "fàngjià", meaning: "libur", example: "国庆节学校放假。", examplePinyin: "Guóqìngjié xuéxiào fàngjià.", exampleTranslation: "School has holiday on National Day." },
+            { hanzi: "放松", pinyin: "fàngsōng", meaning: "rileks", example: "周末去郊游放松下。", examplePinyin: "Zhōumò qù jiāoyóu fàngsōng xià.", exampleTranslation: "Go outings on weekend to relax." },
+            { hanzi: "费用", pinyin: "fèiyòng", meaning: "biaya", example: "结算医疗费用。", examplePinyin: "Jiésuàn yīliáo fèiyòng.", exampleTranslation: "Settle medical expenses." },
+            { hanzi: "份", pinyin: "fèn", meaning: "porsi/bagian", example: "请给我一份报纸。", examplePinyin: "Qǐng gěi wǒ yī fèn bàozhǐ.", exampleTranslation: "Please give me a newspaper." },
+            { hanzi: "丰富", pinyin: "fēngfù", meaning: "kaya/beragam", example: "经历非常丰富。", examplePinyin: "Jīnglì fēicháng fēngfù.", exampleTranslation: "Experience is very rich." },
+            { hanzi: "风景", pinyin: "fēngjǐng", meaning: "pemandangan", example: "欣赏沿途的美丽风景。", examplePinyin: "Xīnshǎng yántú de měilì fēngjǐng.", exampleTranslation: "Appreciate beautiful scenery along way." },
+            { hanzi: "否定", pinyin: "fǒudìng", meaning: "menolak", example: "不能全盘否定他的努力。", examplePinyin: "Bùnéng quánpán fǒudìng tā de nǔlì.", exampleTranslation: "Cannot completely deny his efforts." },
+            { hanzi: "服务员", pinyin: "fúwùyuán", meaning: "pelayan", example: "服务员态度非常热心。", examplePinyin: "Fúwùyuán tàidù fēicháng rèxīn.", exampleTranslation: "Waiter attitude is very warm." },
+            { hanzi: "符合", pinyin: "fúhé", meaning: "sesuai", example: "符合质量检测标准。", examplePinyin: "Fúhé zhìliàng jiǎncè biāozhǔn.", exampleTranslation: "Meet quality testing standards." },
+            { hanzi: "父亲", pinyin: "fùqīn", meaning: "ayah", example: "父亲深爱着全家人。", examplePinyin: "Fùqīn shēn ài zhe quán jiārén.", exampleTranslation: "Father deeply loves whole family." },
+            { hanzi: "付款", pinyin: "fùkuǎn", meaning: "bayar", example: "请到柜台扫码付款。", examplePinyin: "Qǐng dào guìtái sǎo mǎ fùkuǎn.", exampleTranslation: "Please pay by scanning code at counter." },
+            { hanzi: "负责", pinyin: "fùzé", meaning: "tanggung jawab", example: "工作要认真负责。", examplePinyin: "Gōngzuò yào rènzhēn fùzé.", exampleTranslation: "Work conscientiously and responsibly." },
+            { hanzi: "复印", pinyin: "fùyìn", meaning: "fotokopi", example: "复印这份合同。", examplePinyin: "Fùyìn zhè fèn hétong.", exampleTranslation: "Photocopy this contract." },
+            { hanzi: "复杂", pinyin: "fùzá", meaning: "rumit", example: "这个问题情况很复杂。", examplePinyin: "Zhè gè wèntí qíngkuàng hěn fùzá.", exampleTranslation: "Situation of this problem is complex." },
+            { hanzi: "富", pinyin: "fù", meaning: "kaya", example: "勤劳创造富足生活。", examplePinyin: "Qínláo chuàngzào fùzú shēnghuó.", exampleTranslation: "Hard work creates prosperous life." },
+            { hanzi: "改变", pinyin: "gǎibiàn", meaning: "mengubah", example: "知识改变命运。", examplePinyin: "Zhīshi gǎibiàn mìngyùn.", exampleTranslation: "Knowledge changes destiny." },
+            { hanzi: "干净", pinyin: "gānjìng", meaning: "bersih", example: "把手洗干净。", examplePinyin: "Bǎ shǒu xǐ gānjìng.", exampleTranslation: "Wash hands clean." },
+            { hanzi: "敢", pinyin: "gǎn", meaning: "berani", example: "敢于面对任何挑战。", examplePinyin: "Gǎnyú miànduì rènhé tiǎozhàn.", exampleTranslation: "Dare to face any challenges." },
+            { hanzi: "感冒", pinyin: "gǎnmào", meaning: "flu", example: "受凉容易感冒。", examplePinyin: "Shòuliáng róngyì gǎnmào.", exampleTranslation: "Catching cold easily causes flu." },
+            { hanzi: "感情", pinyin: "gǎnqíng", meaning: "perasaan", example: "我们感情一直很好。", examplePinyin: "Wǒmen gǎnqíng yīzhí hěn hǎo.", exampleTranslation: "Our relationship has always been good." },
+            { hanzi: "感谢", pinyin: "gǎnxiè", meaning: "berterimakasih", example: "非常感谢大家的关心。", examplePinyin: "Fēicháng gǎnxiè dàjiā de guānxīn.", exampleTranslation: "Thank you all very much for your care." },
+            { hanzi: "干", pinyin: "gàn", meaning: "kerjakan", example: "努力干好本职工作。", examplePinyin: "Nǔlì gàn hǎo běnzhí gōngzuò.", exampleTranslation: "Work hard to do own job well." },
+            { hanzi: "高级", pinyin: "gāojí", meaning: "tingkat tinggi", example: "购买高级酒店服务。", examplePinyin: "Gòumǎi gāojí jiǔdiàn fúwù.", exampleTranslation: "Purchase premium hotel services." },
+            { hanzi: "高", pinyin: "gāo", meaning: "tinggi", example: "这幢楼非常高。", examplePinyin: "Zhè zhuàng lóu fēicháng gāo.", exampleTranslation: "This building is very tall." },
+            { hanzi: "高兴", pinyin: "gāoxìng", meaning: "senang", example: "见到你我非常高兴。", examplePinyin: "Jiàndào nǐ wǒ fēicháng gāoxìng.", exampleTranslation: "Very happy to see you." },
+            { hanzi: "告别", pinyin: "gàobié", meaning: "berpamitan", example: "依依不舍地挥手告别。", examplePinyin: "Yīyībùshě de huīshǒu gàobié.", exampleTranslation: "Wave goodbye reluctantly." },
+            { hanzi: "告诉", pinyin: "gàosu", meaning: "memberitahu", example: "请告诉我真相。", examplePinyin: "Qǐng gàosu wǒ zhēnxiàng.", exampleTranslation: "Please tell me the truth." },
+            { hanzi: "哥哥", pinyin: "gēge", meaning: "kakak laki-laki", example: "哥哥在大学读书。", examplePinyin: "Gēge zài dàxué dúshū.", exampleTranslation: "Older brother is studying at university." },
+            { hanzi: "个", pinyin: "gè", meaning: "buah/orang", example: "我有一个好朋友。", examplePinyin: "Wǒ yǒu yī gè hǎo péngyou.", exampleTranslation: "I have a good friend." },
+            { hanzi: "各", pinyin: "gè", meaning: "setiap/berbagai", example: "各行各业都在发展。", examplePinyin: "Gèhánggèyè dōu zài fāzhǎn.", exampleTranslation: "All walks of life are developing." },
+            { hanzi: "给", pinyin: "gěi", meaning: "memberi", example: "给妈妈送上一束花。", examplePinyin: "Gěi māma sòng shàng yī shù huā.", exampleTranslation: "Give mom a bouquet of flowers." },
+            { hanzi: "根", pinyin: "gēn", meaning: "batang", example: "吃一根香蕉。", examplePinyin: "Chī yī gēn xiāngjiāo.", exampleTranslation: "Eat a banana." },
+            { hanzi: "跟", pinyin: "gēn", meaning: "dengan", example: "跟我一起去买菜。", examplePinyin: "Gēn wǒ yīqǐ qù mǎi cài.", exampleTranslation: "Come buy groceries with me." },
+            { hanzi: "根据", pinyin: "gēnjù", meaning: "berdasarkan", example: "根据天气预测出门。", examplePinyin: "Gēnjù tiānqì yùcè chūmén.", exampleTranslation: "Go out according to weather forecast." },
+            { hanzi: "更", pinyin: "gèng", meaning: "lebih", example: "明天会更好。", examplePinyin: "Míngtiān huì gèng hǎo.", exampleTranslation: "Tomorrow will be better." },
+            { hanzi: "公交车", pinyin: "gōngjiāochē", meaning: "bus", example: "乘坐公交车出行。", examplePinyin: "Chéngzuò gōngjiāochē chūxíng.", exampleTranslation: "Travel by public bus." },
+            { hanzi: "公里", pinyin: "gōnglǐ", meaning: "kilometer", example: "全程共五公里。", examplePinyin: "Quánchéng gòng wǔ gōnglǐ.", exampleTranslation: "Total distance is five kilometers." },
+            { hanzi: "公司", pinyin: "gōngsī", meaning: "perusahaan", example: "他在跨国公司上班。", examplePinyin: "Tā zài kuàguó gōngsī shàngbān.", exampleTranslation: "He works in a multinational company." },
+            { hanzi: "公园", pinyin: "gōngyuán", meaning: "taman", example: "在公园散步。", examplePinyin: "Zài gōngyuán sànbù.", exampleTranslation: "Take a walk in the park." },
+            { hanzi: "工具", pinyin: "gōngjù", meaning: "alat", example: "语言是沟通的工具。", examplePinyin: "Yǔyán shì gōutōng de gōngjù.", exampleTranslation: "Language is a tool for communication." },
+            { hanzi: "工资", pinyin: "gōngzī", meaning: "gaji", example: "按时发放员工工资。", examplePinyin: "Ànshí fāfàng yuángōng gōngzī.", exampleTranslation: "Pay employees' salaries on time." },
+            { hanzi: "工作", pinyin: "gōngzuò", meaning: "kerja", example: "热爱自己的工作。", examplePinyin: "Rè'ài zìjǐ de gōngzuò.", exampleTranslation: "Love your own work." },
+            { hanzi: "狗", pinyin: "gǒu", meaning: "anjing", example: "小狗是人类忠实的朋友。", examplePinyin: "Xiǎogǒu shì rénlèi zhōngshí de péngyou.", exampleTranslation: "Dogs are human's loyal friends." },
+            { hanzi: "够", pinyin: "gòu", meaning: "cukup", example: "准备的食物足够了。", examplePinyin: "Zhǔnbèi de shíwù zúgòu le.", exampleTranslation: "Prepared food is enough." },
+            { hanzi: "故事", pinyin: "gùshi", meaning: "cerita", example: "讲故事给小朋友听。", examplePinyin: "Jiǎng gùshi gěi xiǎopéngyou tīng.", exampleTranslation: "Tell stories to young children." },
+            { hanzi: "刮风", pinyin: "guāfēng", meaning: "berangin", example: "外面刮风了，关好门窗。", examplePinyin: "Wàimiàn guāfēng le, guān hǎo ménchuāng.", exampleTranslation: "It's windy outside, close doors and windows." },
+            { hanzi: "关", pinyin: "guān", meaning: "tutup", example: "请关上灯准备睡觉。", examplePinyin: "Qǐng guān shàng dēng zhǔnbèi shuìjiào.", exampleTranslation: "Please turn off lights to sleep." },
+            { hanzi: "关键", pinyin: "guānjiàn", meaning: "kunci", example: "关键在于找到方法。", examplePinyin: "Guānjiàn zàiyú zhǎodào fāngfǎ.", exampleTranslation: "The key lies in finding the method." },
+            { hanzi: "关系", pinyin: "guānxi", meaning: "hubungan", example: "建立良好的合作关系。", examplePinyin: "Jiànlì liánghǎo de hézuò guānxi.", exampleTranslation: "Establish good cooperative relationship." },
+            { hanzi: "关心", pinyin: "guānxīn", meaning: "perhatian", example: "互相关心体贴。", examplePinyin: "Hùxiāng guānxīn tǐtiē.", exampleTranslation: "Care and be considerate to each other." },
+            { hanzi: "观点", pinyin: "guāndiǎn", meaning: "pandangan", example: "表达不同的观点。", examplePinyin: "Biǎodá bùtóng de guāndiǎn.", exampleTranslation: "Express different views." },
+            { hanzi: "观众", pinyin: "guānzhòng", meaning: "penonton", example: "现场观众非常热烈。", examplePinyin: "Xiànchǎng guānzhòng fēicháng rèliè.", exampleTranslation: "On-site audience is very enthusiastic." },
+            { hanzi: "管理", pinyin: "guǎnlǐ", meaning: "kelola", example: "科学管理企业。", examplePinyin: "Kēxué guǎnlǐ qǐyè.", exampleTranslation: "Manage enterprise scientifically." },
+            { hanzi: "光", pinyin: "guāng", meaning: "cahaya/habis", example: "把盘子里的菜吃光。", examplePinyin: "Bǎ pánzi lǐ de cài chī guāng.", exampleTranslation: "Eat up all food on plate." },
+            { hanzi: "广播", pinyin: "guǎngbō", meaning: "siaran", example: "听收广播节目。", examplePinyin: "Tīng shōu guǎngbō jiémù.", exampleTranslation: "Listen to broadcast programs." },
+            { hanzi: "广告", pinyin: "guǎnggào", meaning: "iklan", example: "电视上播出了新广告。", examplePinyin: "Diànshì shang bōchū le xīn guǎnggào.", exampleTranslation: "New advertisement aired on TV." },
+            { hanzi: "逛", pinyin: "guàng", meaning: "jalan-jalan", example: "逛超市买必需品。", examplePinyin: "Guàng chāoshì mǎi bìxūpǐn.", exampleTranslation: "Stroll supermarket to buy necessities." },
+            { hanzi: "规定", pinyin: "guīdìng", meaning: "aturan", example: "严格遵守公司规定。", examplePinyin: "Yángé zūnshǒu gōngsī guīdìng.", exampleTranslation: "Strictly abide by company rules." },
+            { hanzi: "贵", pinyin: "guì", meaning: "mahal", example: "这件大衣质量好但不贵。", examplePinyin: "Zhè jiàn dàyī zhìliàng hǎo dàn bù guì.", exampleTranslation: "This coat quality is good but not expensive." },
+            { hanzi: "国籍", pinyin: "guójí", meaning: "kewarganegaraan", example: "核对护照上的国籍信息。", examplePinyin: "Héduì hùzhào shang de guójí xìnxī.", exampleTranslation: "Verify nationality info on passport." },
+            { hanzi: "国际", pinyin: "guójì", meaning: "internasional", example: "参加国际学术会议。", examplePinyin: "Cānjiā guójì xuéshù huìyì.", exampleTranslation: "Attend international academic conference." },
+            { hanzi: "国家", pinyin: "guójiā", meaning: "negara", example: "热爱自己的国家。", examplePinyin: "Rè'ài zìjǐ de guójiā.", exampleTranslation: "Love your own country." },
+            { hanzi: "果汁", pinyin: "guǒzhī", meaning: "jus buah", example: "新鲜鲜榨的苹果果汁。", examplePinyin: "Xīnxiān xiānzhà de píngguǒ guǒzhī.", exampleTranslation: "Freshly squeezed apple juice." },
+            { hanzi: "过程", pinyin: "guòchéng", meaning: "proses", example: "记录实验的全部过程。", examplePinyin: "Jìlù shíyàn de quánbù guòchéng.", exampleTranslation: "Record entire process of experiment." },
+            { hanzi: "过去", pinyin: "guòqù", meaning: "masa lalu", example: "过去的就让它过去吧。", examplePinyin: "Guòqù de jiù ràng tā guòqù ba.", exampleTranslation: "Let past be past." },
+            { hanzi: "过", pinyin: "guò", meaning: "melewati/pernah", example: "过马路要注意车辆。", examplePinyin: "Guò mǎlù yào zhùyì chēliàng.", exampleTranslation: "Watch out for cars when crossing road." },
+            { hanzi: "哈尔滨", pinyin: "Hā'ěrbīn", meaning: "harbin", example: "哈尔滨的冰雕非常有名。", examplePinyin: "Hā'ěrbīn de bīngdiāo fēicháng yǒumíng.", exampleTranslation: "Harbin's ice sculptures are very famous." },
+            { hanzi: "海", pinyin: "hǎi", meaning: "laut", example: "大海波涛汹涌。", examplePinyin: "Dàhǎi bōtāoxiōngyǒng.", exampleTranslation: "The sea is surging with waves." },
+            { hanzi: "海鲜", pinyin: "hǎixiān", meaning: "makanan laut", example: "晚上去吃新鲜海鲜。", examplePinyin: "Wǎnshang qù chī xīnxiān hǎixiān.", exampleTranslation: "Go eat fresh seafood tonight." },
+            { hanzi: "害怕", pinyin: "hàipà", meaning: "takut", example: "不要害怕面对困难。", examplePinyin: "Bùyào hàipà miànduì kùnnán.", exampleTranslation: "Don't be afraid to face difficulties." }
+        ];
+
+        let currentIndex = 0;
+        let wrongWords = JSON.parse(localStorage.getItem('hsk4_wrong_words')) || [];
+
+        const cardEl = document.getElementById('card');
+        const hanziEl = document.getElementById('card-hanzi');
+        const pinyinEl = document.getElementById('card-pinyin');
+        const meaningEl = document.getElementById('card-meaning');
+        const exampleEl = document.getElementById('card-example');
+        const examplePinyinEl = document.getElementById('card-example-pinyin');
+        const exampleTransEl = document.getElementById('card-example-trans');
+        const counterEl = document.getElementById('counter');
+        const progressEl = document.getElementById('progress');
+        const wrongListEl = document.getElementById('wrongList');
+        const wrongCountEl = document.getElementById('wrong-count');
+
+        function updateCard() {
+            const item = vocabData[currentIndex];
+            hanziEl.textContent = item.hanzi;
+            pinyinEl.textContent = item.pinyin;
+            meaningEl.textContent = item.meaning;
+            exampleEl.textContent = item.example;
+            examplePinyinEl.textContent = item.examplePinyin;
+            exampleTransEl.textContent = item.exampleTranslation;
+
+            counterEl.textContent = `词语 ${currentIndex + 1} / ${vocabData.length}`;
+            progressEl.style.width = `${((currentIndex + 1) / vocabData.length) * 100}%`;
+
+            cardEl.classList.remove('flipped');
+        }
+
+        function flipCard() {
+            cardEl.classList.toggle('flipped');
+        }
+
+        function nextCard() {
+            if (currentIndex < vocabData.length - 1) {
+                currentIndex++;
+                updateCard();
+            } else {
+                alert('🎉 恭喜您已复习完所有 469 个 HSK 4 词汇！');
+                currentIndex = 0;
+                updateCard();
+            }
+        }
+
+        function prevCard() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateCard();
+            }
+        }
+
+        function markCorrect() {
+            nextCard();
+        }
+
+        function markWrong() {
+            const item = vocabData[currentIndex];
+            const exists = wrongWords.some(w => w.hanzi === item.hanzi);
+            if (!exists) {
+                wrongWords.push(item);
+                saveAndRenderWrongList();
+            }
+            nextCard();
+        }
+
+        function removeWrong(index, event) {
+            event.stopPropagation();
+            wrongWords.splice(index, 1);
+            saveAndRenderWrongList();
+        }
+
+        function saveAndRenderWrongList() {
+            localStorage.setItem('hsk4_wrong_words', JSON.stringify(wrongWords));
+            wrongCountEl.textContent = `${wrongWords.length} 个词`;
+            
+            if (wrongWords.length === 0) {
+                wrongListEl.innerHTML = `<div class="empty-tip">暂无错词，继续加油！💪</div>`;
+                return;
+            }
+
+            wrongListEl.innerHTML = '';
+            wrongWords.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.className = 'wrong-item';
+                li.innerHTML = `
+                    <span onclick="jumpToWord('${item.hanzi}')"><strong>${item.hanzi}</strong> (${item.pinyin}) - ${item.meaning}</span>
+                    <button class="remove-wrong" onclick="removeWrong(${index}, event)">移出</button>
+                `;
+                wrongListEl.appendChild(li);
+            });
+        }
+
+        function jumpToWord(hanzi) {
+            const index = vocabData.findIndex(item => item.hanzi === hanzi);
+            if (index !== -1) {
+                currentIndex = index;
+                updateCard();
+            }
+        }
+
+        function playAudio(type) {
+            const item = vocabData[currentIndex];
+            const textToSpeak = type === 'word' ? item.hanzi : item.example;
+            
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(textToSpeak);
+                utterance.lang = 'zh-CN';
+                utterance.rate = 0.88;
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert('您的浏览器不支持语音朗读功能');
+            }
+        }
+
+        // 初始化加载
+        updateCard();
+        saveAndRenderWrongList();
+    </script>
+</body>
+</html>
